@@ -1,9 +1,19 @@
-import express from 'express';
-import prisma from '../configs/db.js';
+import express from "express";
+import { register, login } from "../router_handler/users.js";
+import { registerSchema, loginSchema } from "../schema/users.js";
+import { validateRequest } from "../middlewares/validateRequest.js"; // 假設中間件存放在 middlewares 資料夾中
+import prisma from "../configs/db.js";
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+// 註冊路由
+router.post("/register", validateRequest(loginSchema), register);
+
+// 登入路由
+router.post("/login", validateRequest(registerSchema), login);
+
+//第三方登入
+router.get("/", async (req, res) => {
   try {
     const rows = await prisma.users.findMany();
     res.json(rows);
@@ -12,4 +22,4 @@ router.get('/', async (req, res) => {
   }
 });
 
-export default router;
+export { router };
