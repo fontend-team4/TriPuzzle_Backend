@@ -85,7 +85,7 @@ model schedule_places {
 }
 
 model schedules {
-  id              Int               @id
+  id              Int               @id @default(autoincrement())
   title           String            @db.VarChar(45)
   create_by       String            @db.VarChar(45)
   co_edit_url     String?           @db.VarChar(225)
