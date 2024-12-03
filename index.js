@@ -13,14 +13,15 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({
-  origin: 'http://localhost:5173',
-  method: ['GET', 'POST', 'PUT', 'DELETE']
-}))
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    method: ["GET", "POST", "PUT", "DELETE"],
+  })
+);
 
-app.use(express.json())
+app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -50,7 +51,6 @@ app.use(
   })
 );
 
-
 // 用戶路由
 app.use("/users", usersRouter);
 
@@ -71,12 +71,11 @@ app.use((err, req, res, next) => {
   res.errmessage(err);
 });
 
+app.get("/", (req, res) => {
+  res.send("Welcome to the API!");
+});
 
-app.get('/', (req, res) => {
-  res.send('Welcome to the API!')
-})
-
-const PORT = 3000
+const PORT = 3000;
 app.listen(PORT, () => {
-  console.log(`server running on port ${PORT}`)
-})
+  console.log(`server running on port ${PORT}`);
+});
