@@ -3,8 +3,9 @@ import express from "express";
 import cors from "cors";
 import { expressjwt } from "express-jwt";
 import { ZodError } from "zod";
-const usersRouter = require('./src/routes/users')
-const schedulesRouter = require('./src/routes/schedules')
+// import { router as schedules  } from "./src/routes/schedules.js"
+
+
 const router = express.Router()
 
 import { router as usersRouter } from "./src/routes/users.js";
@@ -21,7 +22,7 @@ app.use(
 );
 
 app.use('/users', usersRouter)
-app.use('/schedules', schedulesRouter)
+// app.use('/schedules', schedules)
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
