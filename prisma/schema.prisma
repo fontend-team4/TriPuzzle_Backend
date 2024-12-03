@@ -20,7 +20,7 @@ model bills {
 model categories {
   id                Int                 @id @default(autoincrement())
   name              String?             @db.VarChar(100)
-  places_categories places_categories[]
+  places_categories places_categories[] @ignore
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
@@ -44,8 +44,6 @@ model places {
   country           String              @db.VarChar(45)
   city              String              @db.VarChar(45)
   address           String              @db.VarChar(255)
-  latitude          Decimal             @db.Decimal(9, 6)
-  longitude         Decimal             @db.Decimal(9, 6)
   phone             Int?
   website           String?             @db.VarChar(225)
   rating            Decimal?            @default(0.0) @db.Decimal(2, 1)
@@ -54,8 +52,8 @@ model places {
   web_map           String?             @db.VarChar(255)
   share_url         String?             @db.VarChar(255)
   share_code        Bytes?              @db.Blob
-  favorites         favorites[]
-  places_categories places_categories[]
+  favorites         favorites[]         @ignore
+  places_categories places_categories[] @ignore
   schedule_places   schedule_places[]
 }
 
@@ -87,9 +85,9 @@ model schedule_places {
 }
 
 model schedules {
-  id              Int               @id
+  id              Int               @id @default(autoincrement())
   title           String            @db.VarChar(45)
-  create_by       String            @db.VarChar(45)
+  create_by       Int           
   co_edit_url     String?           @db.VarChar(225)
   co_edit_qrcode  Bytes?            @db.Blob
   schedule_note   String?           @db.Text
@@ -100,7 +98,7 @@ model schedules {
   schedule_places schedule_places[]
   users_bills     users_bills[]
   users_images    users_images[]
-  users_schedules users_schedules[]
+  users_schedules users_schedules[] @ignore
 }
 
 model users {
@@ -115,10 +113,10 @@ model users {
   description     String?           @db.VarChar(225)
   login_way       String?           @db.VarChar(45)
   create_at       DateTime?         @default(now()) @db.Timestamp(0)
-  favorites       favorites[]
+  favorites       favorites[]       @ignore
   users_bills     users_bills[]
   users_images    users_images[]
-  users_schedules users_schedules[]
+  users_schedules users_schedules[] @ignore
 }
 
 model users_bills {
@@ -154,7 +152,6 @@ model users_schedules {
   schedule_id Int
   user_id     Int
   access      Boolean   @default(true)
-  is_creator  Boolean   @default(false)
   schedules   schedules @relation(fields: [schedule_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "schedules_schedule_id")
   users       users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "schedules_user_id")
 

@@ -75,7 +75,7 @@ CREATE TABLE `schedule_places` (
 
 -- CreateTable
 CREATE TABLE `schedules` (
-    `id` INTEGER NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `title` VARCHAR(45) NOT NULL,
     `create_by` VARCHAR(45) NOT NULL,
     `co_edit_url` VARCHAR(225) NULL,
