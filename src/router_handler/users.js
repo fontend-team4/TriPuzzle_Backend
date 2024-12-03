@@ -12,7 +12,7 @@ const register = async (req, res) => {
   if (existingUser) {
     return res
       .status(409)
-      .json({ status: 1, message: "Email is already registered" });
+      .json({ status: 409, message: "Email is already registered" });
   }
 
   // 加密密碼並創建用戶
@@ -37,13 +37,15 @@ const login = async (req, res) => {
   // 查找用戶
   const user = await prisma.users.findUnique({ where: { email } });
   if (!user) {
-    return res.status(404).json({ status: 1, message: "User not found" });
+    return res.status(404).json({ status: 404, message: "User not found" });
   }
 
   // 驗證密碼
   const isValidPassword = bcrypt.compareSync(password, user.password);
   if (!isValidPassword) {
-    return res.status(401).json({ status: 1, message: "Invalid credentials" });
+    return res
+      .status(401)
+      .json({ status: 401, message: "Invalid credentials" });
   }
 
   // 生成 JWT
@@ -53,7 +55,7 @@ const login = async (req, res) => {
   });
 
   res.status(200).json({
-    status: 0,
+    status: 200,
     message: "Login successful",
     token: `Bearer ${token}`,
   });

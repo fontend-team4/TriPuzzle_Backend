@@ -3,7 +3,7 @@ import cors from "cors";
 import { expressjwt } from "express-jwt";
 import { ZodError } from "zod";
 
-import { router as usersRouter } from "./src/routes/users.js"; // 假設你的 usersRouter 路由在 src/routes/users.js
+import { router as usersRouter } from "./src/routes/users.js";
 import { config } from "./config.js";
 
 const app = express();
