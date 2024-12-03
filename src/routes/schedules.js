@@ -1,9 +1,9 @@
 const express = require('express')
 const router = express.Router()
 const prisma = require('../configs/db')
+import { authenticate } from "../middlewares/auth"
 
-
-router.get('/', async (req, res) => {
+router.get('/', authenticate ,async (req, res) => {
     try {
       const rows = await prisma.schedules.findMany()
       res.json(rows)
@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
 
 // 建立新行程
 //目前缺create_by驗證
-router.post('/', async (req, res) => {
+router.post('/', authenticate ,async (req, res) => {
     try {
       const {
         title,
