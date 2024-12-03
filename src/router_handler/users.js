@@ -27,7 +27,7 @@ const register = async (req, res) => {
 
   res
     .status(201)
-    .json({ status: 0, message: "Registration successful", user: newUser });
+    .json({ status: 201, message: "Registration successful", user: newUser });
 };
 
 // 登入
