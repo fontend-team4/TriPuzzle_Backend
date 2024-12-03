@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import { expressjwt } from "express-jwt";
 import { ZodError } from "zod";
+import { router as schedulesRouter } from "./src/routes/schedules.js";
+const router = express.Router()
 
 import { router as usersRouter } from "./src/routes/users.js";
 import { config } from "./config.js";
@@ -33,7 +35,7 @@ app.use((req, res, next) => {
 // 路由之前配置解析 Token 的中間件
 app.use(
   expressjwt({ secret: config.jwtSecretKey, algorithms: ["HS256"] }).unless({
-    path: [/^\/api/, /^\/users/], // 不需要驗證的路徑
+    path: [/^\/api/, /^\/users/, /^\/schedules/], // 不需要驗證的路徑
   })
 );
 
@@ -44,6 +46,7 @@ app.get("/", (req, res) => {
 
 // 用戶路由
 app.use("/users", usersRouter);
+app.use("/schedules", schedulesRouter); // 確保路徑與導入正確
 
 // 全局錯誤處理中間件
 app.use((err, req, res, next) => {
