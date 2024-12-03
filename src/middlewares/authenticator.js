@@ -4,7 +4,7 @@ import { config } from "../../config.js";
 /**
  * JWT 認證中間件
  */
-export const authenticator = (req, res, next) => {
+const authenticator = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -25,3 +25,5 @@ export const authenticator = (req, res, next) => {
     return res.status(403).json({ status: 403, message: "無效的 Token" });
   }
 };
+
+export { authenticator };
