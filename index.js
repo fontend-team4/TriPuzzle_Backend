@@ -1,7 +1,11 @@
+
 import express from "express";
 import cors from "cors";
 import { expressjwt } from "express-jwt";
 import { ZodError } from "zod";
+const usersRouter = require('./src/routes/users')
+const schedulesRouter = require('./src/routes/schedules')
+const router = express.Router()
 
 import { router as usersRouter } from "./src/routes/users.js";
 import { config } from "./config.js";
@@ -16,8 +20,11 @@ app.use(
   })
 );
 
+app.use('/users', usersRouter)
+app.use('/schedules', schedulesRouter)
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
 
 // 統一處理 res.error 錯誤處理函數
 app.use((req, res, next) => {
