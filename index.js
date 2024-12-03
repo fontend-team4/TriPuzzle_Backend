@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import { expressjwt } from "express-jwt";
 import { ZodError } from "zod";
-
+import { authenticator } from "./src/middlewares/authenticator.js";
 import { router as usersRouter } from "./src/routes/users.js";
 import { config } from "./config.js";
 
