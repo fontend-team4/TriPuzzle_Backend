@@ -48,6 +48,7 @@ router.post('/' , authenticate ,async (req, res) => {
         img_url,
         start_date,
         end_date,
+        transportation_way,
       } = req.body;
   
       const userId = req.user.id;
@@ -65,6 +66,7 @@ router.post('/' , authenticate ,async (req, res) => {
           img_url,
           start_date:formattedStartDate,
           end_date:formattedEndDate,
+          transportation_way,
         },
       });
   
@@ -84,6 +86,7 @@ router.post('/' , authenticate ,async (req, res) => {
         img_url,
         start_date,
         end_date,
+        transportation_way,
       } = req.body;
   
       const formattedStartDate = start_date ? new Date(`${start_date}T00:00:00.000Z`) : undefined;
@@ -98,6 +101,7 @@ router.post('/' , authenticate ,async (req, res) => {
           ...(img_url && { img_url }),
           ...(formattedStartDate && { start_date: formattedStartDate }),
           ...(formattedEndDate && { end_date: formattedEndDate }),
+          ...(transportation_way && { transportation_way, })
         },
       });
   

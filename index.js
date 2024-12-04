@@ -35,7 +35,7 @@ app.use((req, res, next) => {
 
 // 路由之前配置解析 Token 的中間件
 app.use(
-  authenticate,
+  // authenticate, //不需要加在這裡，加在需要用到的routes上就好
   expressjwt({ secret: config.jwtSecretKey, algorithms: ["HS256"] }).unless({
     path: [/^\/api/, /^\/users/], // 不需要驗證的路徑
   })
