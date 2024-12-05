@@ -8,11 +8,16 @@ const register = async (req, res) => {
   const { name, email, password } = req.body;
 
   // 檢查用戶是否已存在
-  const existingUser = await prisma.users.findUnique({ where: { email } });
+  const existingUser = await prisma.users.findFirst({
+    where: {
+      OR: [email ? { email } : undefined, name ? { name } : undefined],
+    },
+  });
   if (existingUser) {
-    return res
-      .status(409)
-      .json({ status: 409, message: "Email is already registered" });
+    return res.status(409).json({
+      status: 409,
+      message: "Email or Username is already registered",
+    });
   }
 
   // 加密密碼並創建用戶
@@ -34,14 +39,25 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res
+      .status(400)
+      .json({ status: 400, message: "Email and password are required" });
+  }
+
   // 查找用戶
-  const user = await prisma.users.findUnique({ where: { email } });
+  const user = await prisma.users.findFirst({
+    where: {
+      OR: [{ email }, { name: email }], // email 或 name 符合條件即可
+    },
+  });
   if (!user) {
     return res.status(404).json({ status: 404, message: "User not found" });
   }
 
   // 驗證密碼
   const isValidPassword = bcrypt.compareSync(password, user.password);
+
   if (!isValidPassword) {
     return res
       .status(401)
