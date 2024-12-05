@@ -6,9 +6,9 @@ import { validateRequest } from "../middlewares/validateRequest.js"; // 假設�
 const router = express.Router();
 
 // 註冊路由
-router.post("/register", validateRequest(loginSchema), register);
+router.post("/register", validateRequest(registerSchema), register);
 
 // 登入路由
-router.post("/login", validateRequest(registerSchema), login);
+router.post("/login", validateRequest(loginSchema), login);
 
 export { router };

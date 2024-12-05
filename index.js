@@ -18,6 +18,9 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use((req, res, next) => {
+  next();
+});
 
 // 統一處理 res.error 錯誤處理函數
 app.use((req, res, next) => {
@@ -32,7 +35,7 @@ app.use((req, res, next) => {
 
 // 路由之前配置解析 Token 的中間件
 app.use(
-  authenticator,
+  // authenticator,
   expressjwt({ secret: config.jwtSecretKey, algorithms: ["HS256"] }).unless({
     path: [/^\/api/, /^\/users/], // 不需要驗證的路徑
   })
@@ -56,7 +59,10 @@ app.use((err, req, res, next) => {
 
   // JWT 身分認證錯誤處理
   if (err.name === "UnauthorizedError") {
-    return res.errmessage("身分認證失敗");
+    return res.errmessage(`Authentication failed: ${err.message}`);
+  }
+  if (err.name === "UnauthorizedError" && err.message === "jwt expired") {
+    return res.errmessage("Token 已過期，請重新登入");
   }
 
   // 其他錯誤
