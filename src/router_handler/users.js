@@ -5,7 +5,7 @@ import { config } from "../../config.js";
 
 // 註冊
 const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, phone } = req.body;
 
   // 檢查用戶是否已存在
   const existingUser = await prisma.users.findFirst({
