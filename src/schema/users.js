@@ -2,12 +2,16 @@ import { z } from "zod";
 
 const registerSchema = z.object({
   body: z.object({
-    name: z.string().min(1, "Name is required"),
+    name: z
+      .string()
+      .min(1, "Name is required")
+      .regex(/^[^\s]+$/, "Username must not contain spaces"),
     email: z.string().email("Invalid email format"),
     password: z
       .string()
       .min(6, "Password must be at least 6 characters long")
       .regex(/^[^\s]+$/, "Password must not contain spaces"),
+    // phone: z.number().positive().optional(),
   }),
 });
 
@@ -15,7 +19,6 @@ const loginSchema = z.object({
   body: z.object({
     email: z.string(),
     password: z.string().min(6, "Password must be at least 6 characters long"),
-    // phone: z.number().positive().optional(),
   }),
 });
 

@@ -107,7 +107,7 @@ model users {
   email           String            @unique(map: "email_UNIQUE") @db.VarChar(45)
   password        String            @db.VarChar(255)
   profile_pic_url String?           @db.VarChar(255)
-  phone           Int?
+  phone           Int?              @unique(map: "phone_UNIQUE")
   gender          users_gender?
   birthday        DateTime?         @db.Date
   description     String?           @db.VarChar(225)
