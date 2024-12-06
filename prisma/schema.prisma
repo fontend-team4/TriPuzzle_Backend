@@ -8,23 +8,27 @@ datasource db {
 }
 
 model bills {
-  id        Int       @id @default(autoincrement())
-  date      DateTime  @db.Date
-  title     String    @db.VarChar(45)
-  price     Decimal   @db.Decimal(10, 2)
-  create_at DateTime? @default(now()) @db.Timestamp(0)
-  category  String    @db.VarChar(45)
+  id          Int           @id @default(autoincrement())
+  date        DateTime      @db.Date
+  title       String        @db.VarChar(45)
+  price       Decimal       @db.Decimal(10, 2)
+  create_at   DateTime?     @default(now()) @db.Timestamp(0)
+  category    String        @db.VarChar(45)
+  users_bills users_bills[]
 }
 
 model categories {
-  id   Int     @id @default(autoincrement())
-  name String? @db.VarChar(100)
+  id                Int                 @id @default(autoincrement())
+  name              String?             @db.VarChar(100)
+  places_categories places_categories[] @ignore
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model favorites {
   favorite_user   Int
   favorite_places Int
+  places          places @relation(fields: [favorite_places], references: [id], onUpdate: Restrict, map: "favorites_place_id")
+  users           users  @relation(fields: [favorite_user], references: [id], onUpdate: Restrict, map: "favorites_user_id")
 
   @@index([favorite_places], map: "favorites_place_id_idx")
   @@index([favorite_user], map: "favorites_user_id_idx")
@@ -32,28 +36,33 @@ model favorites {
 }
 
 model places {
-  id             Int      @id @default(autoincrement())
-  name           String   @db.VarChar(255)
-  name_en        String?  @db.VarChar(255)
-  description    String?  @db.VarChar(255)
-  image_url      String   @db.VarChar(255)
-  country        String   @db.VarChar(45)
-  city           String   @db.VarChar(45)
-  address        String   @db.VarChar(255)
-  phone          Int?
-  website        String?  @db.VarChar(225)
-  rating         Decimal? @default(0.0) @db.Decimal(2, 1)
-  business_hours String?  @db.VarChar(255)
-  google_map_url String?  @db.VarChar(255)
-  web_map        String?  @db.VarChar(255)
-  share_url      String?  @db.VarChar(255)
-  share_code     Bytes?   @db.Blob
+  id                Int                 @id @default(autoincrement())
+  name              String              @db.VarChar(255)
+  name_en           String?             @db.VarChar(255)
+  description       String?             @db.VarChar(255)
+  image_url         String              @db.VarChar(255)
+  country           String              @db.VarChar(45)
+  city              String              @db.VarChar(45)
+  address           String              @db.VarChar(255)
+  phone             Int?
+  website           String?             @db.VarChar(225)
+  rating            Decimal?            @default(0.0) @db.Decimal(2, 1)
+  business_hours    String?             @db.VarChar(255)
+  google_map_url    String?             @db.VarChar(255)
+  web_map           String?             @db.VarChar(255)
+  share_url         String?             @db.VarChar(255)
+  share_code        Bytes?              @db.Blob
+  favorites         favorites[]         @ignore
+  places_categories places_categories[] @ignore
+  schedule_places   schedule_places[]
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model places_categories {
   place_id    Int
   category_id Int
+  categories  categories @relation(fields: [category_id], references: [id], onUpdate: Restrict, map: "categories_category_id")
+  places      places     @relation(fields: [place_id], references: [id], onUpdate: Restrict, map: "categories_place_id")
 
   @@index([category_id], map: "categories_category_id_idx")
   @@index([place_id], map: "categories_places_id_idx")
@@ -68,45 +77,58 @@ model schedule_places {
   stay_time          DateTime  @default(dbgenerated("'01:00:00'")) @db.Time(0)
   transportation_way String?   @db.VarChar(45)
   order              String    @unique(map: "order_UNIQUE") @db.VarChar(45)
+  places             places    @relation(fields: [place_id], references: [id], onUpdate: Restrict, map: "schedule_place_id")
+  schedules          schedules @relation(fields: [schedule_id], references: [id], onUpdate: Restrict, map: "schedule_schedule_id")
 
   @@index([place_id], map: "schedule_place_id_idx")
   @@index([schedule_id], map: "schedule_schedule_id_idx")
 }
 
 model schedules {
-  id             Int       @id
-  title          String    @db.VarChar(45)
-  create_by      String    @db.VarChar(45)
-  co_edit_url    String?   @db.VarChar(225)
-  co_edit_qrcode Bytes?    @db.Blob
-  schedule_note  String?   @db.Text
-  image_url      String?   @db.VarChar(255)
-  start_date     DateTime  @db.Date
-  end_date       DateTime  @db.Date
-  created_at     DateTime? @default(now()) @db.Timestamp(0)
+  id              Int               @id
+  title           String            @db.VarChar(45)
+  create_by       String            @db.VarChar(45)
+  co_edit_url     String?           @db.VarChar(225)
+  co_edit_qrcode  Bytes?            @db.Blob
+  schedule_note   String?           @db.Text
+  image_url       String?           @db.VarChar(255)
+  start_date      DateTime          @db.Date
+  end_date        DateTime          @db.Date
+  created_at      DateTime?         @default(now()) @db.Timestamp(0)
+  schedule_places schedule_places[]
+  users_bills     users_bills[]
+  users_images    users_images[]
+  users_schedules users_schedules[] @ignore
 }
 
 model users {
-  id              Int           @id @default(autoincrement())
-  name            String        @db.VarChar(45)
-  email           String        @unique(map: "email_UNIQUE") @db.VarChar(45)
-  password        String        @db.VarChar(255)
-  profile_pic_url String?       @db.VarChar(255)
+  id              Int               @id @default(autoincrement())
+  name            String            @db.VarChar(45)
+  email           String            @unique(map: "email_UNIQUE") @db.VarChar(45)
+  password        String            @db.VarChar(255)
+  profile_pic_url String?           @db.VarChar(255)
   phone           Int?
   gender          users_gender?
-  birthday        DateTime?     @db.Date
-  description     String?       @db.VarChar(225)
-  login_way       String?       @db.VarChar(45)
-  create_at       DateTime?     @default(now()) @db.Timestamp(0)
+  birthday        DateTime?         @db.Date
+  description     String?           @db.VarChar(225)
+  login_way       String?           @db.VarChar(45)
+  create_at       DateTime?         @default(now()) @db.Timestamp(0)
+  favorites       favorites[]       @ignore
+  users_bills     users_bills[]
+  users_images    users_images[]
+  users_schedules users_schedules[] @ignore
 }
 
 model users_bills {
-  id          Int      @id @default(autoincrement())
+  id          Int       @id @default(autoincrement())
   schedule_id Int
   user_id     Int
   bill_id     Int
   pay_first   Boolean
   share       Boolean?
+  bills       bills     @relation(fields: [bill_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "bills_bill_id")
+  schedules   schedules @relation(fields: [schedule_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "bills_schedule_id")
+  users       users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "bills_user_id")
 
   @@index([bill_id], map: "fk_bill_id_idx")
   @@index([schedule_id], map: "fk_schedule_id_idx")
@@ -114,10 +136,12 @@ model users_bills {
 }
 
 model users_images {
-  id                 Int    @id @default(autoincrement())
+  id                 Int       @id @default(autoincrement())
   users_id           Int
   schedule_id        Int
-  schedule_image_url String @db.VarChar(255)
+  schedule_image_url String    @db.VarChar(255)
+  schedules          schedules @relation(fields: [schedule_id], references: [id], onUpdate: Restrict, map: "image_schedule")
+  users              users     @relation(fields: [users_id], references: [id], onUpdate: Restrict, map: "image_user_id")
 
   @@index([schedule_id], map: "image_schedule_idx")
   @@index([users_id], map: "image_user_id_idx")
@@ -127,7 +151,9 @@ model users_images {
 model users_schedules {
   schedule_id Int
   user_id     Int
-  access      Boolean @default(true)
+  access      Boolean   @default(true)
+  schedules   schedules @relation(fields: [schedule_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "schedules_schedule_id")
+  users       users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "schedules_user_id")
 
   @@index([schedule_id], map: "fk_schedules_id_idx")
   @@index([user_id], map: "fk_user_id_idx")

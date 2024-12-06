@@ -30,6 +30,7 @@ passport.use(
             data: {
               name: profile.displayName,
               profile_pic_url: profile.photos ? profile.photos[0].value : null,
+              login_way: 'GOOGLE',
             },
           });
         } else {
@@ -39,6 +40,7 @@ passport.use(
               name: profile.displayName,
               profile_pic_url: profile.photos ? profile.photos[0].value : null,
               password: "",
+              login_way: 'GOOGLE',
             },
           });
         }
