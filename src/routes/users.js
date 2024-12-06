@@ -1,16 +1,14 @@
-const express = require('express')
-const router = express.Router()
-const prisma = require('../configs/db')
+import { Router } from "express";
+const router = Router();
+import { prisma } from "../configs/db.js";
 
+router.get("/", async (req, res) => {
+  try {
+    const rows = await users.findMany();
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
-router.get('/', async (req, res) => {
-    try {
-      const rows = await prisma.users.findMany()
-      res.json(rows)
-    } catch (err) {
-      res.status(500).json({ error: err.message })
-    }
-  })
-  
-
-  module.exports = router
+export default router;
