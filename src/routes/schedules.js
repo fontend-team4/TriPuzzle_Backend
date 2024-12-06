@@ -83,7 +83,7 @@ router.patch(
       const {
         title,
         schedule_note,
-        img_url,
+        image_url,
         start_date,
         end_date,
         transportation_way,
@@ -102,7 +102,7 @@ router.patch(
         data: {
           ...(title && { title }),
           ...(schedule_note && { schedule_note }),
-          ...(img_url && { img_url }),
+          ...(image_url && { image_url }),
           ...(formattedStartDate && { start_date: formattedStartDate }),
           ...(formattedEndDate && { end_date: formattedEndDate }),
           ...(transportation_way && { transportation_way }),
