@@ -2,11 +2,10 @@
 
 import dotenv from "dotenv";
 
-// 初始化 dotenv
-dotenv.config();
+dotenv.config({ path: "./prisma/.env" });
 
 const config = {
-  jwtSecretKey: process.env.JWT_SECRET, // 從環境變數讀取 secretKey
+  jwtSecretKey: process.env.JWT_SECRET,
 };
 
 export { config };

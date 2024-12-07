@@ -11,7 +11,7 @@ const registerSchema = z.object({
       .string()
       .min(6, "Password must be at least 6 characters long")
       .regex(/^[^\s]+$/, "Password must not contain spaces"),
-    // phone: z.number().positive().optional(),
+    phone: z.number().positive().optional(),
   }),
 });
 
