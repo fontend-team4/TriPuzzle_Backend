@@ -5,16 +5,12 @@ import { config } from "../../config.js";
 
 // 註冊
 const register = async (req, res) => {
-  const { name, email, password, phone } = req.body;
+  const { name, email, password } = req.body;
 
   // 檢查用戶是否已存在
   const existingUser = await prisma.users.findFirst({
     where: {
-      OR: [
-        email ? { email } : undefined,
-        name ? { name } : undefined,
-        phone ? { phone } : undefined,
-      ],
+      OR: [{ email }, { name }],
     },
   });
   if (existingUser) {
@@ -34,25 +30,38 @@ const register = async (req, res) => {
     },
   });
 
-  res
-    .status(201)
-    .json({ status: 201, message: "Registration successful", user: newUser });
+  res.status(201).json({
+    status: 201,
+    message: "Registration successful",
+    user: { id: newUser.id, name: newUser.name, email: newUser.email },
+  });
 };
 
 // 登入
 const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { identifier, password } = req.body;
 
-  if (!email || !password) {
-    return res
-      .status(400)
-      .json({ status: 400, message: "Email and password are required" });
+  if (!identifier || !password) {
+    return res.status(400).json({
+      status: 400,
+      message: "Email、Username or Phonenumber and password are required",
+    });
   }
+
+  // 處理電話號碼格式
+  const formattedIdentifier =
+    identifier.startsWith("09") && identifier.length === 10
+      ? `886${identifier.slice(1)}`
+      : identifier;
 
   // 查找用戶
   const user = await prisma.users.findFirst({
     where: {
-      OR: [{ email }, { name: email }, { phone: email }], // email 或 name 符合條件即可
+      OR: [
+        { email: formattedIdentifier },
+        { name: formattedIdentifier },
+        { phone: formattedIdentifier },
+      ],
     },
   });
   if (!user) {
