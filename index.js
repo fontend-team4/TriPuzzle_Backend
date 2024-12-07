@@ -22,17 +22,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// 統一處理 res.error 錯誤處理函數
-app.use((req, res, next) => {
-  res.errmessage = function (err, status = 400) {
-    res.send({
-      status,
-      message: err instanceof Error ? err.message : err,
-    });
-  };
-  next();
-});
-
 // 路由之前配置解析 Token 的中間件
 app.use(
   // authenticator,
@@ -54,19 +43,29 @@ app.use((err, req, res, next) => {
   // Zod 驗證錯誤處理
   if (err instanceof ZodError) {
     const errors = err.errors.map((e) => e.message).join(", ");
-    return res.errmessage(`Validation error: ${errors}`);
+    return res.status(400).json({
+      status: 400,
+      message: `Validation error: ${errors}`,
+    });
   }
 
   // JWT 身分認證錯誤處理
   if (err.name === "UnauthorizedError") {
-    return res.errmessage(`Authentication failed: ${err.message}`);
-  }
-  if (err.name === "UnauthorizedError" && err.message === "jwt expired") {
-    return res.errmessage("Token 已過期，請重新登入");
+    const message =
+      err.message === "jwt expired"
+        ? "Token 已過期，請重新登入"
+        : `Authentication failed: ${err.message}`;
+    return res.status(401).json({
+      status: 401,
+      message,
+    });
   }
 
-  // 其他錯誤
-  res.errmessage(err);
+  // 未知錯誤
+  res.status(404).json({
+    status: 404,
+    message: err instanceof Error ? err.message : String(err),
+  });
 });
 
 // 啟動伺服器

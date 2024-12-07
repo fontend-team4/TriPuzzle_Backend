@@ -10,7 +10,11 @@ const register = async (req, res) => {
   // 檢查用戶是否已存在
   const existingUser = await prisma.users.findFirst({
     where: {
-      OR: [email ? { email } : undefined, name ? { name } : undefined],
+      OR: [
+        email ? { email } : undefined,
+        name ? { name } : undefined,
+        phone ? { phone } : undefined,
+      ],
     },
   });
   if (existingUser) {
@@ -48,7 +52,7 @@ const login = async (req, res) => {
   // 查找用戶
   const user = await prisma.users.findFirst({
     where: {
-      OR: [{ email }, { name: email }], // email 或 name 符合條件即可
+      OR: [{ email }, { name: email }, { phone: email }], // email 或 name 符合條件即可
     },
   });
   if (!user) {
@@ -63,9 +67,11 @@ const login = async (req, res) => {
       .status(401)
       .json({ status: 401, message: "Invalid credentials" });
   }
-
   // 生成 JWT
-  const tokenPayload = { id: user.id, email: user.email };
+  const tokenPayload = {
+    id: user.id,
+    email: user.email,
+  };
   const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
     expiresIn: "10h",
   });
