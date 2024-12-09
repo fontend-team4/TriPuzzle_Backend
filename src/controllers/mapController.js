@@ -60,7 +60,7 @@ export const searchAndStorePlaces = async (req, res) => {
 //   }
 // };
 
-export const calculateRoute = async (req, res) => {
+export const getRoute = async (req, res) => {
   try {
     const { origin, destination } = req.body;
     const directions = await getDirections(origin, destination);
@@ -70,7 +70,7 @@ export const calculateRoute = async (req, res) => {
   }
 };
 
-export const getDistances = async (req, res) => {
+export const calculateDistances = async (req, res) => {
   try {
     const { origins, destinations } = req.body;
     const distances = await getDistanceMatrix(origins, destinations);

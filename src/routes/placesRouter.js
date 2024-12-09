@@ -1,14 +1,14 @@
 import express from "express";
 import {
   searchAndStorePlaces,
-  calculateRoute,
-  getDistances,
+  getRoute,
+  calculateDistances,
 } from "../controllers/mapController.js";
 
 const router = express.Router();
 
 router.post("/places", searchAndStorePlaces); // Search for places
-router.post("/directions", calculateRoute); // Get directions
-router.post("/distances", getDistances); // Calculate distances
+router.post("/directions", getRoute); // Get directions
+router.post("/distances", calculateDistances); // Calculate distances
 
 export default router;
