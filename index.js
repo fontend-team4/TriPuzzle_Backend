@@ -10,6 +10,7 @@ import { router as usersRouter } from "./src/routes/users.js";
 import { config } from "./config.js";
 import authRoutes from "./src/routes/auth.js";
 import "./src/configs/passport.js";
+import placesRouter from "./src/routes/placesRouter.js";
 dotenv.config();
 
 const app = express();
@@ -55,6 +56,9 @@ app.use(
 // 用戶路由
 app.use("/users", usersRouter);
 
+//places路由
+app.use("/places", placesRouter);
+
 // 全局錯誤處理中間件
 app.use((err, req, res, next) => {
   // Zod 驗證錯誤處理
@@ -91,5 +95,8 @@ app.get("/", (req, res) => {
 
 const PORT = 3000;
 app.listen(PORT, () => {
+  console.log(`server running on port ${PORT}`);
+});
+
   console.log(`server running on port ${PORT}`);
 });
