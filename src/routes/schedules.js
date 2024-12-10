@@ -14,7 +14,7 @@ router.get('/' ,async (req, res) => {
   
 
 // 建立新行程
-//目前缺create_by驗證
+
 router.post('/' ,async (req, res) => {
     try {
       const {

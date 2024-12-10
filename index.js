@@ -5,7 +5,7 @@ import session from "express-session";
 import dotenv from "dotenv";
 import { expressjwt } from "express-jwt";
 import { ZodError } from "zod";
-// import { router as schedules  } from "./src/routes/schedules.js"
+import { router as schedules  } from "./src/routes/schedules.js"
 
 
 const router = express.Router()
