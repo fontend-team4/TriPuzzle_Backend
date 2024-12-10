@@ -6,15 +6,14 @@ import dotenv from "dotenv";
 import { expressjwt } from "express-jwt";
 import { ZodError } from "zod";
 import { router as schedulesRouter } from "./src/routes/schedules.js";
-import { authenticate } from "./src/middlewares/auth.js"
-const router = express.Router()
-
 import { router as usersRouter } from "./src/routes/users.js";
 import { config } from "./config.js";
-import authRoutes from "./src/routes/auth.js";
 import "./src/configs/passport.js";
 import placesRouter from "./src/routes/placesRouter.js";
+
+const router = express.Router()
 dotenv.config();
+// console.log(process.env);
 
 const app = express();
 
@@ -26,7 +25,7 @@ app.use(
 );
 
 app.use('/users', usersRouter)
-app.use('/schedules', schedules)
+// app.use('/schedules', schedules)
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
@@ -39,6 +38,9 @@ app.use(
   })
 );
 
+console.log("JWT Secret Key:", config.jwtSecretKey);
+
+
 // 統一處理 res.error 錯誤處理函數
 app.use((req, res, next) => {
   res.errmessage = function (err, status = 400) {
@@ -49,6 +51,7 @@ app.use((req, res, next) => {
   };
   next();
 });
+
 
 // 路由之前配置解析 Token 的中間件
 app.use(
