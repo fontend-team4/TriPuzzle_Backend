@@ -13,7 +13,6 @@ import placesRouter from "./src/routes/placesRouter.js";
 
 const router = express.Router()
 dotenv.config();
-// console.log(process.env);
 
 const app = express();
 
@@ -25,7 +24,6 @@ app.use(
 );
 
 app.use('/users', usersRouter)
-// app.use('/schedules', schedules)
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
@@ -38,7 +36,7 @@ app.use(
   })
 );
 
-console.log("JWT Secret Key:", config.jwtSecretKey);
+
 
 
 // 統一處理 res.error 錯誤處理函數
