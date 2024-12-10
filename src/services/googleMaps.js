@@ -11,6 +11,7 @@ export const getPlaces = async (query, location) => {
         location,
         radius: 1000,
         key: process.env.GOOGLE_MAPS_API_KEY,
+        language: "zh-TW",
       },
     });
     return response.data.results;
@@ -27,6 +28,7 @@ export const getDirections = async (origin, destination) => {
         origin,
         destination,
         key: process.env.GOOGLE_MAPS_API_KEY,
+        language: "zh-TW",
       },
     });
     return response.data.routes;
@@ -43,6 +45,7 @@ export const getDistanceMatrix = async (origins, destinations) => {
         origins,
         destinations,
         key: process.env.GOOGLE_MAPS_API_KEY,
+        language: "zh-TW",
       },
     });
     return response.data.rows;
