@@ -5,9 +5,8 @@ import session from "express-session";
 import dotenv from "dotenv";
 import { expressjwt } from "express-jwt";
 import { ZodError } from "zod";
-import { router as schedules  } from "./src/routes/schedules.js"
-
-
+import { router as schedulesRouter } from "./src/routes/schedules.js";
+import { authenticate } from "./src/middlewares/auth.js"
 const router = express.Router()
 
 import { router as usersRouter } from "./src/routes/users.js";
@@ -53,7 +52,7 @@ app.use((req, res, next) => {
 
 // 路由之前配置解析 Token 的中間件
 app.use(
-  // authenticator,
+  // authenticate, //不需要加在這裡，加在需要用到的routes上就好
   expressjwt({ secret: config.jwtSecretKey, algorithms: ["HS256"] }).unless({
     path: [/^\/api/, /^\/users/], // 不需要驗證的路徑
   })
@@ -64,6 +63,7 @@ app.use("/users", usersRouter);
 
 //places路由
 app.use("/places", placesRouter);
+app.use("/schedules", schedulesRouter); // 確保路徑與導入正確
 
 // 全局錯誤處理中間件
 app.use((err, req, res, next) => {
