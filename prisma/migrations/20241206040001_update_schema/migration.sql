@@ -45,6 +45,7 @@ CREATE TABLE `places` (
     `web_map` VARCHAR(255) NULL,
     `share_url` VARCHAR(255) NULL,
     `share_code` BLOB NULL,
+    `search_code` VARCHAR(255) NULL,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -65,7 +66,7 @@ CREATE TABLE `schedule_places` (
     `which_date` DATE NOT NULL,
     `arrival_time` TIME(0) NULL DEFAULT '08:00:00',
     `stay_time` TIME(0) NOT NULL DEFAULT '01:00:00',
-    `transportation_way` VARCHAR(45) NULL,
+    `transportation_way` ENUM('PUBLIC_TRANSPORT', 'WALK', 'CAR', 'MOTORBIKE', 'CUSTOM') NOT NULL DEFAULT 'PUBLIC_TRANSPORT',
     `order` VARCHAR(45) NOT NULL,
 
     UNIQUE INDEX `order_UNIQUE`(`order`),
@@ -75,15 +76,16 @@ CREATE TABLE `schedule_places` (
 
 -- CreateTable
 CREATE TABLE `schedules` (
-    `id` INTEGER NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `title` VARCHAR(45) NOT NULL,
-    `create_by` VARCHAR(45) NOT NULL,
+    `create_by` INTEGER NOT NULL,
     `co_edit_url` VARCHAR(225) NULL,
     `co_edit_qrcode` BLOB NULL,
     `schedule_note` TEXT NULL,
     `image_url` VARCHAR(255) NULL,
     `start_date` DATE NOT NULL,
     `end_date` DATE NOT NULL,
+    `transportation_way` ENUM('PUBLIC_TRANSPORT', 'WALK', 'CAR', 'MOTORBIKE', 'CUSTOM') NOT NULL DEFAULT 'PUBLIC_TRANSPORT',
     `created_at` TIMESTAMP(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
 
     PRIMARY KEY (`id`)

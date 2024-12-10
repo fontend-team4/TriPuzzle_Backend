@@ -1,5 +1,11 @@
 //全局文件
 
-const config = { jwtSecretKey: "Tripuzzle No1 ^_^" };
+import dotenv from "dotenv";
+
+dotenv.config({ path: "./prisma/.env" });
+
+const config = {
+  jwtSecretKey: process.env.JWT_SECRET,
+};
 
 export { config };
