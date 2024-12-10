@@ -1,12 +1,8 @@
-
 import express from "express";
 import cors from "cors";
 import { expressjwt } from "express-jwt";
 import { ZodError } from "zod";
-const usersRouter = require('./src/routes/users')
-const schedulesRouter = require('./src/routes/schedules')
-const router = express.Router()
-
+import { authenticator } from "./src/middlewares/authenticator.js";
 import { router as usersRouter } from "./src/routes/users.js";
 import { config } from "./config.js";
 
@@ -20,25 +16,17 @@ app.use(
   })
 );
 
-app.use('/users', usersRouter)
-app.use('/schedules', schedulesRouter)
+app.use("/users", usersRouter);
+app.use("/schedules", schedulesRouter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-
-// 統一處理 res.error 錯誤處理函數
 app.use((req, res, next) => {
-  res.errmessage = function (err, status = 400) {
-    res.send({
-      status,
-      message: err instanceof Error ? err.message : err,
-    });
-  };
   next();
 });
 
 // 路由之前配置解析 Token 的中間件
 app.use(
+  // authenticator,
   expressjwt({ secret: config.jwtSecretKey, algorithms: ["HS256"] }).unless({
     path: [/^\/api/, /^\/users/], // 不需要驗證的路徑
   })
@@ -57,16 +45,29 @@ app.use((err, req, res, next) => {
   // Zod 驗證錯誤處理
   if (err instanceof ZodError) {
     const errors = err.errors.map((e) => e.message).join(", ");
-    return res.errmessage(`Validation error: ${errors}`);
+    return res.status(400).json({
+      status: 400,
+      message: `Validation error: ${errors}`,
+    });
   }
 
   // JWT 身分認證錯誤處理
   if (err.name === "UnauthorizedError") {
-    return res.errmessage("身分認證失敗");
+    const message =
+      err.message === "jwt expired"
+        ? "Token 已過期，請重新登入"
+        : `Authentication failed: ${err.message}`;
+    return res.status(401).json({
+      status: 401,
+      message,
+    });
   }
 
-  // 其他錯誤
-  res.errmessage(err);
+  // 未知錯誤
+  res.status(404).json({
+    status: 404,
+    message: err instanceof Error ? err.message : String(err),
+  });
 });
 
 // 啟動伺服器

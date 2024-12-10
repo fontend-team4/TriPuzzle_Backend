@@ -1,14 +1,14 @@
 import express from "express";
 import { register, login } from "../router_handler/users.js";
 import { registerSchema, loginSchema } from "../schema/users.js";
-import { validateRequest } from "../middlewares/validateRequest.js"; // 假設中間件存放在 middlewares 資料夾中
+import { validateRequest } from "../middlewares/validateRequest.js"; // 驗證間件存放在 middlewares 資料夾中
 
 const router = express.Router();
 
 // 註冊路由
-router.post("/register", validateRequest(loginSchema), register);
+router.post("/register", validateRequest(registerSchema), register);
 
 // 登入路由
-router.post("/login", validateRequest(registerSchema), login);
+router.post("/login", validateRequest(loginSchema), login);
 
 export { router };
