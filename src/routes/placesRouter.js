@@ -1,19 +1,19 @@
 import express from "express";
 import {
-  searchAndStorePlaces,
+  searchPlaces,
   getRoute,
   calculateDistances,
 } from "../controllers/mapController.js";
-import { searchPlaces } from "../controllers/placesController.js";
+import { searchPlacesB } from "../controllers/placesController.js";
 import { test } from "../controllers/testController.js";
 
 const router = express.Router();
 
-router.post("/places", searchAndStorePlaces);
+router.post("/places", searchPlaces);
 router.post("/directions", getRoute);
 router.post("/distances", calculateDistances);
 
-router.get("/search", searchPlaces); //Testing
+router.post("/search", searchPlacesB); //Testing
 router.get("/search2", test); //Testing
 
 export default router;

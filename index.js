@@ -3,7 +3,6 @@ import passport from "passport";
 import cors from "cors";
 import session from "express-session";
 import dotenv from "dotenv";
-// import usersRouter from "./src/routes/users.js";
 import authRoutes from "./src/routes/auth.js";
 import "./src/configs/passport.js";
 import { expressjwt } from "express-jwt";
@@ -12,12 +11,11 @@ import { router as schedulesRouter } from "./src/routes/schedules.js";
 // import { authenticate } from "./src/middlewares/auth.js";
 // import { authenticator } from "./src/middlewares/authenticator.js";
 import { router as usersRouter } from "./src/routes/users.js";
+import placesRouter from "./src/routes/placesRouter.js";
 import { config } from "./config.js";
 
-const router = express.Router();
-dotenv.config();
-
 const app = express();
+dotenv.config();
 
 app.use(
   session({
@@ -46,15 +44,6 @@ app.get("/", (req, res) => {
   res.send("Welcome to the API!");
 });
 
-// CORS 設定
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-  })
-);
-
-app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -68,7 +57,6 @@ app.use(
 
 console.log("JWT Secret Key:", config.jwtSecretKey);
 
-
 // 統一處理 res.error 錯誤處理函數
 app.use((req, res, next) => {
   res.errmessage = function (err, status = 400) {
@@ -79,7 +67,6 @@ app.use((req, res, next) => {
   };
   next();
 });
-
 
 // 路由之前配置解析 Token 的中間件
 app.use(
@@ -124,10 +111,6 @@ app.use((err, req, res, next) => {
     status: 404,
     message: err instanceof Error ? err.message : String(err),
   });
-});
-
-app.get("/", (req, res) => {
-  res.send("Welcome to the API!");
 });
 
 const PORT = 3000;
