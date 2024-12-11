@@ -6,6 +6,7 @@
 2. 建立.env放環境變數 DATABASE_URL
 
 
+
 ```sh
 npm install
 ```
