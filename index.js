@@ -2,6 +2,10 @@ import express from "express";
 import cors from "cors";
 import { expressjwt } from "express-jwt";
 import { ZodError } from "zod";
+import { router as schedulesRouter } from "./src/routes/schedules.js";
+import { authenticate } from "./src/middlewares/auth.js";
+const router = express.Router();
+
 import { authenticator } from "./src/middlewares/authenticator.js";
 import { router as usersRouter } from "./src/routes/users.js";
 import { config } from "./config.js";
@@ -37,6 +41,7 @@ app.get("/", (req, res) => {
 
 // 用戶路由
 app.use("/users", usersRouter);
+app.use("/schedules", schedulesRouter); // 確保路徑與導入正確
 
 // 全局錯誤處理中間件
 app.use((err, req, res, next) => {

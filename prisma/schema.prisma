@@ -53,6 +53,7 @@ model places {
   share_url         String?             @db.VarChar(255)
   share_code        Bytes?              @db.Blob
   search_code       String?             @db.VarChar(255)
+  search_code       String?             @db.VarChar(255)
   favorites         favorites[]         @ignore
   places_categories places_categories[] @ignore
   schedule_places   schedule_places[]
