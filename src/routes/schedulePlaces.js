@@ -22,16 +22,21 @@ router.get('/', async (req, res) => {
 // POST: 新增一筆 schedule_place
 router.post('/', async (req, res) => {
   const { schedule_id, place_id, which_date, arrival_time, stay_time, transportation_way, order } = req.body;
+  const parsedWhichDate = new Date(which_date);
+  if (isNaN(parsedWhichDate)) {
+    return res.status(400).json({ error: 'which_date 格式錯誤，應為 ISO 格式的日期時間' });
+  }
   const arrivalTime = arrival_time ? new Date(`1970-01-01T${arrival_time}Z`) : undefined;
   const stayTime = stay_time ? new Date(`1970-01-01T${stay_time}Z`) : undefined;
+
   try {
     const newSchedulePlace = await prisma.schedule_places.create({
       data: {
         place_id,
         schedule_id,
-        which_date,
-        arrival_time:arrivalTime,
-        stay_time:stayTime,
+        which_date: parsedWhichDate,
+        arrival_time: arrivalTime,
+        stay_time: stayTime,
         transportation_way,
         order,
       },
@@ -39,13 +44,15 @@ router.post('/', async (req, res) => {
     res.status(201).json(newSchedulePlace);
   } catch (err) {
     console.error('Error details:', err);
-    res.status(500).json({ error: '無法新增資料' });  }
+    res.status(500).json({ error: '無法新增資料', details: err.message });
+  }
 });
 
 // PUT: 更新指定的 schedule_place
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { which_date, arrival_time, stay_time, transportation_way, order } = req.body;
+  const orderString = order ? order.toString() : undefined;
   try {
     const updatedSchedulePlace = await prisma.schedule_places.update({
       where: { id: parseInt(id) },
@@ -54,7 +61,7 @@ router.put('/:id', async (req, res) => {
         arrival_time,
         stay_time,
         transportation_way,
-        order,
+        order:orderString,
       },
     });
     res.status(200).json(updatedSchedulePlace);
