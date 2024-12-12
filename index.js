@@ -12,6 +12,7 @@ import { router as schedulesRouter } from "./src/routes/schedules.js";
 // import { authenticate } from "./src/middlewares/auth.js";
 // import { authenticator } from "./src/middlewares/authenticator.js";
 import { router as usersRouter } from "./src/routes/users.js";
+import { router as profileRouter } from "./src/routes/profile.js";
 import { config } from "./config.js";
 
 const router = express.Router();
@@ -41,6 +42,8 @@ app.use(passport.session());
 app.use("/auth", authRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/users", usersRouter);
+app.use("/users", profileRouter);
+
 
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");
