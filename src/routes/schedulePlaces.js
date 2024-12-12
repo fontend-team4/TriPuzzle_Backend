@@ -1,5 +1,5 @@
 import express from 'express';
-import prisma from '../configs/db.js'; // 使用相對路徑引入 Prisma Client
+import prisma from '../configs/db.js';
 
 const router = express.Router();
 
@@ -8,8 +8,8 @@ router.get('/', async (req, res) => {
   try {
     const schedulePlaces = await prisma.schedule_places.findMany({
       include: {
-        places: true, // 關聯 place 資料表
-        schedules: true, // 關聯 schedule 資料表
+        places: true,
+        schedules: true,
       },
     });
     res.status(200).json(schedulePlaces);
@@ -23,9 +23,6 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   const { schedule_id, place_id, which_date, arrival_time, stay_time, transportation_way, order } = req.body;
   const parsedWhichDate = new Date(which_date);
-  if (isNaN(parsedWhichDate)) {
-    return res.status(400).json({ error: 'which_date 格式錯誤，應為 ISO 格式的日期時間' });
-  }
   const arrivalTime = arrival_time ? new Date(`1970-01-01T${arrival_time}Z`) : undefined;
   const stayTime = stay_time ? new Date(`1970-01-01T${stay_time}Z`) : undefined;
 
@@ -44,7 +41,7 @@ router.post('/', async (req, res) => {
     res.status(201).json(newSchedulePlace);
   } catch (err) {
     console.error('Error details:', err);
-    res.status(500).json({ error: '無法新增資料', details: err.message });
+    res.status(500).json({ error: '無法新增資料' });
   }
 });
 
