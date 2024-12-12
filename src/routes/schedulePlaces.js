@@ -22,11 +22,25 @@ router.get('/', async (req, res) => {
 // POST: 新增一筆 schedule_place
 router.post('/', async (req, res) => {
   const { schedule_id, place_id, which_date, arrival_time, stay_time, transportation_way, order } = req.body;
-  const parsedWhichDate = new Date(which_date);
-  const arrivalTime = arrival_time ? new Date(`1970-01-01T${arrival_time}Z`) : undefined;
-  const stayTime = stay_time ? new Date(`1970-01-01T${stay_time}Z`) : undefined;
+
+  // 處理日期與時間格式
+  const parsedWhichDate = which_date ? new Date(which_date) : null;
+  if (parsedWhichDate && isNaN(parsedWhichDate)) {
+    return res.status(400).json({ error: '無效的日期格式' });
+  }
+
+  const arrivalTime = arrival_time ? new Date(`1970-01-01T${arrival_time}Z`) : null;
+  if (arrival_time && isNaN(arrivalTime)) {
+    return res.status(400).json({ error: '無效的到達時間格式' });
+  }
+
+  const stayTime = stay_time ? new Date(`1970-01-01T${stay_time}Z`) : null;
+  if (stay_time && isNaN(stayTime)) {
+    return res.status(400).json({ error: '無效的停留時間格式' });
+  }
 
   try {
+    // 嘗試新增資料至資料庫
     const newSchedulePlace = await prisma.schedule_places.create({
       data: {
         place_id,
@@ -38,10 +52,22 @@ router.post('/', async (req, res) => {
         order,
       },
     });
+
+    // 成功回應新增的資料
     res.status(201).json(newSchedulePlace);
   } catch (err) {
-    console.error('Error details:', err);
-    res.status(500).json({ error: '無法新增資料' });
+    // 捕獲 Prisma 的唯一性約束錯誤 (P2002)
+    if (err.code === 'P2002') {
+      console.error('Unique constraint error:', err.meta);
+      res.status(400).json({
+        error: '資料唯一性約束錯誤',
+        details: `欄位 ${err.meta.target} 的值已存在，請提供唯一的值`,
+      });
+    } else {
+      // 捕獲其他未知錯誤
+      console.error('Error details:', err);
+      res.status(500).json({ error: '無法新增資料', details: err.message });
+    }
   }
 });
 
