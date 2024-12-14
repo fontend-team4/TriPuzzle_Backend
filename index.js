@@ -14,7 +14,6 @@ import { router as usersRouter } from "./src/routes/users.js";
 import { router as profileRouter } from "./src/routes/profile.js";
 import { config } from "./config.js";
 import placesRouter from "./src/routes/placesRouter.js";
-import { config } from "./config.js";
 
 const app = express();
 dotenv.config();
