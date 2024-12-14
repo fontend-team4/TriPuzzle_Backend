@@ -20,7 +20,7 @@ model bills {
 model categories {
   id                Int                 @id @default(autoincrement())
   name              String?             @db.VarChar(100)
-  places_categories places_categories[] @ignore
+  places_categories places_categories[]
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
@@ -30,9 +30,9 @@ model favorites {
   places          places @relation(fields: [favorite_places], references: [id], onUpdate: Restrict, map: "favorites_place_id")
   users           users  @relation(fields: [favorite_user], references: [id], onUpdate: Restrict, map: "favorites_user_id")
 
+  @@id([favorite_user, favorite_places])
   @@index([favorite_places], map: "favorites_place_id_idx")
   @@index([favorite_user], map: "favorites_user_id_idx")
-  @@ignore
 }
 
 model places {
@@ -53,14 +53,14 @@ model places {
   share_url         String?             @db.VarChar(255)
   share_code        Bytes?              @db.Blob
   search_code       String?             @db.VarChar(255)
-  search_code       String?             @db.VarChar(255)
-  favorites         favorites[]         @ignore
-  places_categories places_categories[] @ignore
+  favorites         favorites[]
+  places_categories places_categories[]
   schedule_places   schedule_places[]
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model places_categories {
+  id          Int        @id @default(autoincrement())
   place_id    Int
   category_id Int
   categories  categories @relation(fields: [category_id], references: [id], onUpdate: Restrict, map: "categories_category_id")
@@ -68,10 +68,10 @@ model places_categories {
 
   @@index([category_id], map: "categories_category_id_idx")
   @@index([place_id], map: "categories_places_id_idx")
-  @@ignore
 }
 
 model schedule_places {
+  id                 Int               @id @default(autoincrement())
   place_id           Int
   schedule_id        Int
   which_date         DateTime          @db.Date
@@ -84,14 +84,6 @@ model schedule_places {
 
   @@index([place_id], map: "schedule_place_id_idx")
   @@index([schedule_id], map: "schedule_schedule_id_idx")
-}
-
-enum TransportationWay {
-  PUBLIC_TRANSPORT
-  WALK
-  CAR
-  MOTORBIKE
-  CUSTOM
 }
 
 model schedules {
@@ -109,7 +101,7 @@ model schedules {
   schedule_places    schedule_places[]
   users_bills        users_bills[]
   users_images       users_images[]
-  users_schedules    users_schedules[] @ignore
+  users_schedules    users_schedules[]
 }
 
 model users {
@@ -124,10 +116,10 @@ model users {
   description     String?           @db.VarChar(225)
   login_way       String?           @db.VarChar(45)
   create_at       DateTime?         @default(now()) @db.Timestamp(0)
-  favorites       favorites[]       @ignore
+  favorites       favorites[]
   users_bills     users_bills[]
   users_images    users_images[]
-  users_schedules users_schedules[] @ignore
+  users_schedules users_schedules[]
 }
 
 model users_bills {
@@ -166,9 +158,17 @@ model users_schedules {
   schedules   schedules @relation(fields: [schedule_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "schedules_schedule_id")
   users       users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "schedules_user_id")
 
+  @@id([schedule_id, user_id])
   @@index([schedule_id], map: "fk_schedules_id_idx")
   @@index([user_id], map: "fk_user_id_idx")
-  @@ignore
+}
+
+enum TransportationWay {
+  PUBLIC_TRANSPORT
+  WALK
+  CAR
+  MOTORBIKE
+  CUSTOM
 }
 
 enum users_gender {
