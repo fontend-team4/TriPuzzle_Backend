@@ -12,14 +12,4 @@ router.post("/register", validateRequest(registerSchema), register);
 // 登入路由
 router.post("/login", validateRequest(loginSchema), login);
 
-//第三方登入
-router.get("/", async (req, res) => {
-  try {
-    const rows = await prisma.users.findMany();
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 export { router };
