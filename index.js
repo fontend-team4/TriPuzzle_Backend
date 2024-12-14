@@ -26,7 +26,20 @@ app.use(
     saveUninitialized: true,
   })
 );
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "your_secret_key",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  })
+);
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -41,7 +54,12 @@ app.use(passport.session());
 app.use("/auth", authRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/users", usersRouter);
+app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/users", usersRouter);
 
+app.get("/", (req, res) => {
+  res.send("Welcome to the API!");
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");
 });
