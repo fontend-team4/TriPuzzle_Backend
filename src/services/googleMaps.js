@@ -113,12 +113,23 @@ export const getPlacesInfo = async (placeId) => {
     });
 
     const details = response.data.result;
+
     return {
+      place_id: details.place_id,
       name: details.name,
+      geometry: details.geometry.location,
+      types: details.types,
       address: details.formatted_address,
       phone: details.formatted_phone_number || "N/A",
       rating: details.rating,
+      website: details.website || "N/A",
       opening_hours: details.opening_hours?.weekday_text || [],
+      photos:
+        details.photos.map((photo) => ({
+          photo_reference: photo.photo_reference,
+        })) || [],
+      placeUrl: details.url,
+      summary: details.editorial_summary || "N/A",
     };
   } catch (error) {
     throw new Error(`錯誤: ${error.response?.data || error.message}`);
