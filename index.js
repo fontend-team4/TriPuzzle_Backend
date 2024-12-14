@@ -13,6 +13,7 @@ import { router as schedulesRouter } from "./src/routes/schedules.js";
 // import { authenticator } from "./src/middlewares/authenticator.js";
 import { router as usersRouter } from "./src/routes/users.js";
 import { config } from "./config.js";
+import placesRouter from "./src/routes/placesRouter.js";
 
 const router = express.Router();
 dotenv.config();
@@ -60,8 +61,6 @@ app.use("/users", usersRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");
-app.get("/", (req, res) => {
-  res.send("Welcome to the API!");
 });
 
 // CORS 設定
@@ -84,9 +83,6 @@ app.use(
   })
 );
 
-
-
-
 // 統一處理 res.error 錯誤處理函數
 app.use((req, res, next) => {
   res.errmessage = function (err, status = 400) {
@@ -97,7 +93,6 @@ app.use((req, res, next) => {
   };
   next();
 });
-
 
 // 路由之前配置解析 Token 的中間件
 app.use(
