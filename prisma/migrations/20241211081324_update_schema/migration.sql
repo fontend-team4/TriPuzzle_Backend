@@ -98,7 +98,7 @@ CREATE TABLE `users` (
     `email` VARCHAR(45) NOT NULL,
     `password` VARCHAR(255) NOT NULL,
     `profile_pic_url` VARCHAR(255) NULL,
-    `phone` INTEGER NULL,
+    `phone` VARCHAR(191) NULL,
     `gender` ENUM('Male', 'Female', 'Other') NULL,
     `birthday` DATE NULL,
     `description` VARCHAR(225) NULL,
