@@ -12,6 +12,7 @@ import { router as schedulesRouter } from "./src/routes/schedules.js";
 // import { authenticate } from "./src/middlewares/auth.js";
 // import { authenticator } from "./src/middlewares/authenticator.js";
 import { router as usersRouter } from "./src/routes/users.js";
+import { router as favoritesRouter } from "./src/routes/favorites.js"; 
 import { config } from "./config.js";
 
 const router = express.Router();
@@ -76,6 +77,9 @@ app.get("/", (req, res) => {
 // 用戶路由
 app.use("/users", usersRouter);
 app.use("/schedules", schedulesRouter); // 確保路徑與導入正確
+app.use("/favorites", favoritesRouter); 
+
+
 
 // 全局錯誤處理中間件
 app.use((err, req, res, next) => {
