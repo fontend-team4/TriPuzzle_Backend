@@ -1,6 +1,7 @@
 import { Client } from "@googlemaps/google-maps-services-js";
 
 const client = new Client({});
+const apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
 // Fetch places using Places API
 export const getPlaces = async (query, location) => {
@@ -10,7 +11,7 @@ export const getPlaces = async (query, location) => {
         query,
         location,
         radius: 1000,
-        key: process.env.GOOGLE_MAPS_API_KEY,
+        key: apiKey,
         language: "zh-TW",
       },
     });
@@ -27,7 +28,7 @@ export const getDirections = async (origin, destination) => {
       params: {
         origin,
         destination,
-        key: process.env.GOOGLE_MAPS_API_KEY,
+        key: apiKey,
         language: "zh-TW",
       },
     });
@@ -44,12 +45,56 @@ export const getDistanceMatrix = async (origins, destinations) => {
       params: {
         origins,
         destinations,
-        key: process.env.GOOGLE_MAPS_API_KEY,
+        key: apiKey,
         language: "zh-TW",
       },
     });
     return response.data.rows;
   } catch (error) {
     throw new Error(`Google Distance Matrix API error: ${error.message}`);
+  }
+};
+
+export const textSearchPlaces = async (query) => {
+  try {
+    const response = await client.textSearch({
+      params: {
+        query,
+        key: apiKey,
+        language: "zh-TW",
+      },
+    });
+
+    const placesID = response.data.results.map((place) => ({
+      name: place.name,
+      place_id: place.place_id,
+    }));
+
+    return placesID;
+  } catch (error) {
+    throw new Error(`錯誤: ${error.response?.data || error.message}`);
+  }
+};
+
+export const getPlacesInfo = async (placeId) => {
+  try {
+    const response = await client.placeDetails({
+      params: {
+        place_id: placeId,
+        key: apiKey,
+        language: "zh-TW",
+      },
+    });
+
+    const details = response.data.result;
+    return {
+      name: details.name,
+      address: details.formatted_address,
+      phone: details.formatted_phone_number || "N/A",
+      rating: details.rating,
+      opening_hours: details.opening_hours?.weekday_text || [],
+    };
+  } catch (error) {
+    throw new Error(`錯誤: ${error.response?.data || error.message}`);
   }
 };
