@@ -72,7 +72,7 @@ app.use((req, res, next) => {
 app.use(
   // authenticator,
   expressjwt({ secret: config.jwtSecretKey, algorithms: ["HS256"] }).unless({
-    path: [/^\/api/, /^\/users/], // 不需要驗證的路徑
+    path: [/^\/api/, /^\/users/, /^\/places/], // 不需要驗證的路徑
   })
 );
 

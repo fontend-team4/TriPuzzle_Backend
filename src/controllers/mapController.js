@@ -1,19 +1,5 @@
-import {
-  getPlaces,
-  getDirections,
-  getDistanceMatrix,
-} from "../services/googleMaps.js";
+import { getDirections, getDistanceMatrix } from "../services/googleMaps.js";
 import { savePlaceToDB } from "../services/dataBase.js";
-
-export const searchPlaces = async (req, res) => {
-  try {
-    const { query, location } = req.body;
-    const places = await getPlaces(query, location);
-    res.json(places);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 export const getRoute = async (req, res) => {
   try {
