@@ -71,6 +71,7 @@ model places_categories {
 }
 
 model schedule_places {
+  id                 Int              @id @default(autoincrement())
   place_id           Int
   schedule_id        Int
   which_date         DateTime          @db.Date
