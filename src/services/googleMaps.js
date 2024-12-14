@@ -16,7 +16,7 @@ export const getDirections = async (origin, destination) => {
     });
     return response.data.routes;
   } catch (error) {
-    throw new Error(`Google Directions API error: ${error.message}`);
+    throw new Error(`錯誤: ${error.response?.data || error.message}`);
   }
 };
 
@@ -33,16 +33,34 @@ export const getDistanceMatrix = async (origins, destinations) => {
     });
     return response.data.rows;
   } catch (error) {
-    throw new Error(`Google Distance Matrix API error: ${error.message}`);
+    throw new Error(`錯誤: ${error.response?.data || error.message}`);
+  }
+};
+
+// GeoCoding API
+export const getCoordinates = async (city) => {
+  try {
+    const response = await client.geocode({
+      params: {
+        address: city,
+        key: apiKey,
+        language: "zh-TW",
+      },
+    });
+    return response.data.results[0].geometry.location;
+  } catch (error) {
+    throw new Error(`錯誤: ${error.response?.data || error.message}`);
   }
 };
 
 // Places API (Text Search)
-export const textSearchPlaces = async (query) => {
+export const textSearchPlaces = async (query, location) => {
   try {
     const response = await client.textSearch({
       params: {
         query,
+        location,
+        radius: 45000,
         key: apiKey,
         language: "zh-TW",
       },
@@ -60,14 +78,14 @@ export const textSearchPlaces = async (query) => {
 };
 
 // Places API (Nearby Search)
-export const nearbySearchPlaces = async (lat, lng, category) => {
+export const nearbySearchPlaces = async (type, location) => {
   try {
     const response = await client.placesNearby({
       params: {
-        location: { lat: parseFloat(lat), lng: parseFloat(lng) },
-        radius: 2000,
-        type: category || "tourist_attraction",
-        key: process.env.GOOGLE_MAPS_API_KEY,
+        type,
+        location,
+        radius: 5000,
+        key: apiKey,
         language: "zh-TW",
       },
     });
