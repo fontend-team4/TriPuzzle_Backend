@@ -3,7 +3,6 @@ import passport from "passport";
 import cors from "cors";
 import session from "express-session";
 import dotenv from "dotenv";
-// import usersRouter from "./src/routes/users.js";
 import authRoutes from "./src/routes/auth.js";
 import "./src/configs/passport.js";
 import { expressjwt } from "express-jwt";
@@ -16,10 +15,8 @@ import { router as profileRouter } from "./src/routes/profile.js";
 import { config } from "./config.js";
 import placesRouter from "./src/routes/placesRouter.js";
 
-const router = express.Router();
-dotenv.config();
-
 const app = express();
+dotenv.config();
 
 app.use(
   session({
@@ -45,10 +42,22 @@ app.use("/api/auth", authRoutes);
 app.use("/users", usersRouter);
 app.use("/users", profileRouter);
 
-
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");
 });
+
+app.use(express.urlencoded({ extended: false }));
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "your_secret_key",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+console.log("JWT Secret Key:", config.jwtSecretKey);
 
 // 統一處理 res.error 錯誤處理函數
 app.use((req, res, next) => {
@@ -65,7 +74,7 @@ app.use((req, res, next) => {
 app.use(
   // authenticator,
   expressjwt({ secret: config.jwtSecretKey, algorithms: ["HS256"] }).unless({
-    path: [/^\/api/, /^\/users/], // 不需要驗證的路徑
+    path: [/^\/api/, /^\/users/, /^\/places/], // 不需要驗證的路徑
   })
 );
 
