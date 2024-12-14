@@ -12,6 +12,7 @@ import { router as schedulesRouter } from "./src/routes/schedules.js";
 // import { authenticate } from "./src/middlewares/auth.js";
 // import { authenticator } from "./src/middlewares/authenticator.js";
 import { router as usersRouter } from "./src/routes/users.js";
+import { router as profileRouter } from "./src/routes/profile.js";
 import { config } from "./config.js";
 import placesRouter from "./src/routes/placesRouter.js";
 
@@ -27,42 +28,6 @@ app.use(
     saveUninitialized: true,
   })
 );
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "your_secret_key",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
-
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-  })
-);
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-  })
-);
-
-app.use(express.json());
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.use("/auth", authRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/users", usersRouter);
-app.use("/auth", authRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/users", usersRouter);
-
-app.get("/", (req, res) => {
-  res.send("Welcome to the API!");
-});
-
 // CORS 設定
 app.use(
   cors({
@@ -70,18 +35,20 @@ app.use(
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
 );
-
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
+app.use(express.urlencoded({ extended: false }));
 app.use(passport.session());
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "your_secret_key",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+
+app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/users", usersRouter);
+app.use("/users", profileRouter);
+
+
+app.get("/", (req, res) => {
+  res.send("Welcome to the API!");
+});
 
 // 統一處理 res.error 錯誤處理函數
 app.use((req, res, next) => {
@@ -137,10 +104,6 @@ app.use((err, req, res, next) => {
     status: 404,
     message: err instanceof Error ? err.message : String(err),
   });
-});
-
-app.get("/", (req, res) => {
-  res.send("Welcome to the API!");
 });
 
 const PORT = 3000;
