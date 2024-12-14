@@ -45,7 +45,6 @@ app.use("/api/auth", authRoutes);
 app.use("/users", usersRouter);
 app.use("/users", profileRouter);
 
-
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");
 });
