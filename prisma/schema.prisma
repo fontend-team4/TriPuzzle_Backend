@@ -30,7 +30,7 @@ model favorites {
   places          places @relation(fields: [favorite_places], references: [id], onUpdate: Restrict, map: "favorites_place_id")
   users           users  @relation(fields: [favorite_user], references: [id], onUpdate: Restrict, map: "favorites_user_id")
 
-  @@id([favorite_user, favorite_places])
+  @@id([favorite_user, favorite_places]) // 定義複合主鍵
   @@index([favorite_places], map: "favorites_place_id_idx")
   @@index([favorite_user], map: "favorites_user_id_idx")
 }
@@ -53,8 +53,8 @@ model places {
   share_url         String?             @db.VarChar(255)
   share_code        Bytes?              @db.Blob
   search_code       String?             @db.VarChar(255)
-  favorites         favorites[]         @ignore
-  places_categories places_categories[] @ignore
+  favorites         favorites[]
+  places_categories places_categories[]
   schedule_places   schedule_places[]
 }
 
