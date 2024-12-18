@@ -4,12 +4,12 @@
 
 1. 透過mysql建立一個空db
 
-2. 
+2. 安裝套件
 ```sh
 npm install
 ```
 
-3. 
+3. db資料遷移
 ```sh
 npx prisma migrate dev --name update-schema
 ```
