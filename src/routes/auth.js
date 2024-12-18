@@ -14,10 +14,9 @@ router.get('/google/callback',
     })(req, res, next);
   },
   (req, res) => {
-    res.json({
-      message: 'Logged in with Google',
-      user: req.user,
-    });
+    const token = req.user.token
+    const userId = req.user.id
+    res.redirect(`http://localhost:5173/planner?token=${token}&userId=${userId}`);
   }
 );
 
@@ -27,10 +26,9 @@ router.get('/line-login', passport.authenticate('line', {
 router.get('/line/callback',
   passport.authenticate('line', { failureRedirect: '/' }),
   (req, res) => {
-    res.json({
-      message: 'Logged in with Line',
-      user: req.user,
-    });
+    const token = req.user.token
+    const userId = req.user.id
+    res.redirect(`http://localhost:5173/planner?token=${token}&userId=${userId}`);
   }
 );
 
