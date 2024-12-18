@@ -30,7 +30,7 @@ model favorites {
   places          places @relation(fields: [favorite_places], references: [id], onUpdate: Restrict, map: "favorites_place_id")
   users           users  @relation(fields: [favorite_user], references: [id], onUpdate: Restrict, map: "favorites_user_id")
 
-  @@id([favorite_user, favorite_places]) // 定義複合主鍵
+  @@id([favorite_user, favorite_places])
   @@index([favorite_places], map: "favorites_place_id_idx")
   @@index([favorite_user], map: "favorites_user_id_idx")
 }
@@ -116,11 +116,11 @@ model users {
   description     String?           @db.VarChar(225)
   login_way       String?           @db.VarChar(45)
   create_at       DateTime?         @default(now()) @db.Timestamp(0)
+  token           String?           @db.VarChar(511)
   favorites       favorites[]
   users_bills     users_bills[]
   users_images    users_images[]
   users_schedules users_schedules[]
-  token           String?
 }
 
 model users_bills {
@@ -164,10 +164,9 @@ model users_schedules {
   @@index([user_id], map: "fk_user_id_idx")
 }
 
-//將使用過的token存到黑名單資料庫
-model tokenBlacklist {
+model tokenblacklist {
   id        Int      @id @default(autoincrement())
-  token     String   @unique
+  token     String   @unique(map: "tokenBlacklist_token_key")
   createdAt DateTime @default(now())
 }
 
