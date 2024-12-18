@@ -27,7 +27,7 @@ JWT_SECRET=
 
 ```
 
-6. 
+6. run server
 ```sh
 npm run dev
 ```
