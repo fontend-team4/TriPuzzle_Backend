@@ -53,8 +53,8 @@ model places {
   share_url         String?             @db.VarChar(255)
   share_code        Bytes?              @db.Blob
   search_code       String?             @db.VarChar(255)
-  favorites         favorites[]         @ignore
-  places_categories places_categories[] @ignore
+  favorites         favorites[]
+  places_categories places_categories[]
   schedule_places   schedule_places[]
 }
 
@@ -116,6 +116,7 @@ model users {
   description     String?           @db.VarChar(225)
   login_way       String?           @db.VarChar(45)
   create_at       DateTime?         @default(now()) @db.Timestamp(0)
+  token           String?           @db.VarChar(511)
   favorites       favorites[]
   users_bills     users_bills[]
   users_images    users_images[]
@@ -161,6 +162,12 @@ model users_schedules {
   @@id([schedule_id, user_id])
   @@index([schedule_id], map: "fk_schedules_id_idx")
   @@index([user_id], map: "fk_user_id_idx")
+}
+
+model tokenblacklist {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique(map: "tokenBlacklist_token_key")
+  createdAt DateTime @default(now())
 }
 
 enum TransportationWay {

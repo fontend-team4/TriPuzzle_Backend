@@ -12,6 +12,7 @@ import { router as schedulesRouter } from "./src/routes/schedules.js";
 // import { authenticator } from "./src/middlewares/authenticator.js";
 import { router as usersRouter } from "./src/routes/users.js";
 import { router as profileRouter } from "./src/routes/profile.js";
+import { router as favoritesRouter } from "./src/routes/favorites.js"; 
 import { config } from "./config.js";
 import placesRouter from "./src/routes/placesRouter.js";
 
@@ -29,7 +30,7 @@ app.use(
 app.use(
   cors({
     origin: "http://localhost:5173",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PATCH", "DELETE"],
   })
 );
 app.use(express.json());
@@ -84,6 +85,9 @@ app.use("/users", usersRouter);
 //places路由
 app.use("/places", placesRouter);
 app.use("/schedules", schedulesRouter); // 確保路徑與導入正確
+app.use("/favorites", favoritesRouter); 
+
+
 
 // 全局錯誤處理中間件
 app.use((err, req, res, next) => {

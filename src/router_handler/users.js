@@ -85,6 +85,12 @@ const login = async (req, res) => {
     expiresIn: "10h",
   });
 
+  // 存儲 token 到資料庫
+  await prisma.users.update({
+    where: { id: user.id },
+    data: { token },
+  });
+
   res.status(200).json({
     user: {
       id: user.id,
@@ -104,4 +110,86 @@ const login = async (req, res) => {
   });
 };
 
-export { register, login };
+//登出
+const logout = async (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ status: 401, message: "Token is required" });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  // 先驗證 token 基本有效性
+  let decoded;
+  try {
+    decoded = jwt.verify(token, config.jwtSecretKey);
+  } catch (error) {
+    console.error(error);
+    return res.status(401).json({ status: 401, message: "Invalid or expired token" });
+  }
+
+  // 檢查 token 是否在黑名單
+  const isBlacklisted = await prisma.tokenBlacklist.findUnique({
+    where: { token },
+  });
+
+  if (isBlacklisted) {
+    return res.status(401).json({ message: "Token has been logged out" });
+  }
+
+  // 查詢使用者並檢查 token 一致性
+  const user = await prisma.users.findUnique({
+    where: { id: decoded.id },
+  });
+
+  if (!user || user.token !== token) {
+    return res.status(401).json({ status: 401, message: "Invalid token" });
+  }
+
+  // 更新使用者資料庫紀錄，清除 token
+  await prisma.users.update({
+    where: { id: user.id },
+    data: { token: null },
+  });
+
+  // 將 token 放入黑名單以防後續使用
+  await prisma.tokenBlacklist.create({
+    data: { token },
+  });
+
+  res.status(200).json({ status: 200, message: "Logout successful" });
+};
+
+//檢查登入狀態
+const check = async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      // 若沒有使用者資訊，表示 token 不存在或無效
+      return res.status(401).json({ message: "Invalid token or not logged in" });
+    }
+
+    const user = await prisma.users.findUnique({
+      where: { id: req.user.id },
+    });
+
+    if (!user) {
+      // 若查不到該使用者，表示資料庫中無此紀錄
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // 若使用者存在，則證明 token 有效，表示目前處於登入狀態
+    res.status(200).json({
+      message: "你已經登入",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        // 可視需要增加其他使用者資訊
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export { register, login,logout,check };
