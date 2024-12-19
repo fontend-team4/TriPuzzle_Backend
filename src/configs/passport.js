@@ -38,6 +38,7 @@ passport.use(
           where: { id: user.id },
           data: { token },
         });
+
         if (user) {
           user = await prisma.users.update({
             where: { email },

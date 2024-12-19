@@ -129,7 +129,7 @@ const logout = async (req, res) => {
   }
 
   // 檢查 token 是否在黑名單
-  const isBlacklisted = await prisma.tokenBlacklist.findUnique({
+  const isBlacklisted = await prisma.tokenblacklist.findUnique({
     where: { token },
   });
 
@@ -153,7 +153,7 @@ const logout = async (req, res) => {
   });
 
   // 將 token 放入黑名單以防後續使用
-  await prisma.tokenBlacklist.create({
+  await prisma.tokenblacklist.create({
     data: { token },
   });
 

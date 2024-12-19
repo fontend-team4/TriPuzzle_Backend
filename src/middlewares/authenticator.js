@@ -15,7 +15,7 @@ const authenticator = async (req, res, next) => {
     // 驗證 token 是否有效
     const decoded = jwt.verify(token, config.jwtSecretKey);
 
-    const blacklisted = await prisma.tokenBlacklist.findUnique({
+    const blacklisted = await prisma.tokenblacklist.findUnique({
       where: { token },
     });
     
