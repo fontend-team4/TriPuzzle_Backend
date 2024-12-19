@@ -3,6 +3,8 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as LineStrategy } from 'passport-line';
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
+import { config } from '../../config.js';
 
 dotenv.config();
 
@@ -24,6 +26,20 @@ passport.use(
           return done(new Error('No email found in Google profile'), null);
         }
         let user = await prisma.users.findUnique({ where: { email } });
+          // 生成 JWT
+          const tokenPayload = {
+            id: user.id,
+            email: user.email,
+          };
+          const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
+            expiresIn: "10h",
+          });
+
+          // 存儲 token 到資料庫
+          await prisma.users.update({
+            where: { id: user.id },
+            data: { token },
+          });
         if (user) {
           user = await prisma.users.update({
             where: { email },
