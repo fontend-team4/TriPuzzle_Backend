@@ -5,17 +5,44 @@ import { authenticate } from "../middlewares/auth.js";
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// 新增收藏
-router.post('/',authenticate, async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
+  const { favorite_user, favorite_places } = req.body;
 
   try {
-  const { favorite_user, favorite_places } = req.body;
+    // 檢查使用者和景點是否存在
+    const user = await prisma.users.findUnique({ where: { id: favorite_user } });
+    const place = await prisma.places.findUnique({ where: { id: favorite_places } });
+
+    if (!user) {
+      return res.status(400).json({ message: '使用者不存在' });
+    }
+
+    if (!place) {
+      return res.status(400).json({ message: '景點不存在，請先新增景點' });
+    }
+
+    // 檢查是否已存在收藏
+    const existingFavorite = await prisma.favorites.findUnique({
+      where: {
+        favorite_user_favorite_places: {
+          favorite_user,
+          favorite_places,
+        },
+      },
+    });
+
+    if (existingFavorite) {
+      return res.status(400).json({ message: '該收藏已存在' });
+    }
+
+    // 新增收藏
     const favorite = await prisma.favorites.create({
       data: {
         favorite_user,
         favorite_places,
       },
     });
+
     res.json({ message: '已新增收藏', favorite });
   } catch (error) {
     res.status(500).json({ error: 'Error adding favorite', details: error.message });
