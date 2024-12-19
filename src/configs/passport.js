@@ -3,7 +3,7 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as LineStrategy } from 'passport-line';
 import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
-import jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken'
 import { config } from '../../config.js';
 
 dotenv.config();
@@ -20,26 +20,25 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        console.log('Google profile:', profile);
         const email = profile.emails[0]?.value;
         if (!email) {
           return done(new Error('No email found in Google profile'), null);
         }
         let user = await prisma.users.findUnique({ where: { email } });
-          // 生成 JWT
-          const tokenPayload = {
-            id: user.id,
-            email: user.email,
-          };
+        // 生成 JWT
+        const tokenPayload = {
+          id: user.id,
+          email: user.email,
+        };
           const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
-            expiresIn: "10h",
-          });
-
+          expiresIn: "10h",
+        });
           // 存儲 token 到資料庫
-          await prisma.users.update({
-            where: { id: user.id },
-            data: { token },
-          });
+        await prisma.users.update({
+          where: { id: user.id },
+          data: { token },
+        });
+
         if (user) {
           user = await prisma.users.update({
             where: { email },
@@ -78,7 +77,6 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        console.log('Line profile:', profile);
         const email = profile.email || `${profile.id}@line.com`;
         let user = await prisma.users.findUnique({ where: { email } });
         if (user) {
@@ -90,6 +88,19 @@ passport.use(
               login_way: 'LINE',
             },
           });
+          // 生成 JWT
+          const tokenPayload = {
+            id: user.id,
+            email: user.email,
+          };
+            const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
+            expiresIn: "10h",
+          });
+            // 存儲 token 到資料庫
+          await prisma.users.update({
+            where: { id: user.id },
+            data: { token },
+          });
         } else {
           user = await prisma.users.create({
             data: {
@@ -99,6 +110,19 @@ passport.use(
               password: "",
               login_way: 'LINE',
             },
+          });
+          // 生成 JWT
+          const tokenPayload = {
+            id: user.id,
+            email: user.email,
+          };
+            const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
+            expiresIn: "10h",
+          });
+            // 存儲 token 到資料庫
+          await prisma.users.update({
+            where: { id: user.id },
+            data: { token },
           });
         }
         return done(null, user);
@@ -115,10 +139,8 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    console.log('Deserializing user with id:', id);
     const user = await prisma.users.findUnique({ where: { id } });
     if (user) {
-      console.log('User deserialized:', user);
       done(null, user);
     } else {
       done(new Error('User not found'), null);
