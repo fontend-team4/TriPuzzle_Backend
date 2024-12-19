@@ -30,20 +30,21 @@ model favorites {
   places          places @relation(fields: [favorite_places], references: [id], onUpdate: Restrict, map: "favorites_place_id")
   users           users  @relation(fields: [favorite_user], references: [id], onUpdate: Restrict, map: "favorites_user_id")
 
-  @@id([favorite_user, favorite_places]) // 定義複合主鍵
+  @@id([favorite_user, favorite_places])
   @@index([favorite_places], map: "favorites_place_id_idx")
   @@index([favorite_user], map: "favorites_user_id_idx")
 }
 
 model places {
   id                Int                 @id @default(autoincrement())
+  place_id          String              @unique @db.VarChar(255)
   name              String              @db.VarChar(255)
   name_en           String?             @db.VarChar(255)
   description       String?             @db.VarChar(255)
   image_url         String?             @db.VarChar(2048)
-  country           String              @db.VarChar(45)
-  city              String              @db.VarChar(45)
-  address           String              @db.VarChar(255)
+  country           String?             @default("Unknown") @db.VarChar(45)
+  city              String?             @default("Unknown") @db.VarChar(45)
+  address           String?             @default("Unknown") @db.VarChar(255)
   phone             Int?
   website           String?             @db.VarChar(225)
   rating            Decimal?            @default(0.0) @db.Decimal(2, 1)
@@ -116,11 +117,12 @@ model users {
   description     String?           @db.VarChar(225)
   login_way       String?           @db.VarChar(45)
   create_at       DateTime?         @default(now()) @db.Timestamp(0)
+  token           String?
+  token_time      DateTime          @default(now()) @updatedAt @db.Timestamp(0)
   favorites       favorites[]
   users_bills     users_bills[]
   users_images    users_images[]
   users_schedules users_schedules[]
-  token           String?
 }
 
 model users_bills {
@@ -164,10 +166,9 @@ model users_schedules {
   @@index([user_id], map: "fk_user_id_idx")
 }
 
-//將使用過的token存到黑名單資料庫
-model tokenBlacklist {
+model tokenblacklist {
   id        Int      @id @default(autoincrement())
-  token     String   @unique
+  token     String   @unique(map: "tokenBlacklist_token_key")
   createdAt DateTime @default(now())
 }
 

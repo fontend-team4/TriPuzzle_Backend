@@ -14,7 +14,7 @@ import { router as usersRouter } from "./src/routes/users.js";
 import { router as profileRouter } from "./src/routes/profile.js";
 import { router as favoritesRouter } from "./src/routes/favorites.js"; 
 import { config } from "./config.js";
-import placesRouter from "./src/routes/placesRouter.js";
+import { router as placesRouter } from "./src/routes/placesRouter.js";
 
 const app = express();
 dotenv.config();
@@ -42,6 +42,7 @@ app.use("/auth", authRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/users", usersRouter);
 app.use("/users", profileRouter);
+
 
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");
@@ -85,6 +86,8 @@ app.use("/users", usersRouter);
 //places路由
 app.use("/places", placesRouter);
 app.use("/schedules", schedulesRouter); // 確保路徑與導入正確
+
+// 收藏路由
 app.use("/favorites", favoritesRouter); 
 
 
