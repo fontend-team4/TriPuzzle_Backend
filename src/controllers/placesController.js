@@ -3,7 +3,7 @@ import {
   textSearchPlaces,
   nearbySearchPlaces,
   getPlacesInfo,
-} from "@/services/googleMaps";
+} from "../services/googleMaps.js";
 
 export const searchPlaces = async (req, res) => {
   const { city, type, query, latitude, longitude } = req.query;

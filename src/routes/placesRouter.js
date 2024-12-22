@@ -1,6 +1,6 @@
 import express from "express";
-import { searchPlaces } from "@/controllers/placesController.js";
-import { getRoute, calculateDistances } from "@/controllers/mapController.js";
+import { searchPlaces } from "../controllers/placesController.js";
+import { getRoute, calculateDistances } from "../controllers/mapController.js";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient(); // 必須確保 PrismaClient 被正確實例化
