@@ -2,6 +2,9 @@
   "name": "tripuzzle-backend",
   "version": "1.0.0",
   "main": "index.js",
+  "_moduleAliases": {
+    "@": "src"
+  },
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -26,12 +29,12 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-line": "^0.0.4",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+      "nodemon": "^3.1.7",
+  "prisma": "^6.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.7",
     "prisma": "^6.0.1"
-  },
-  "nodemon": "^3.1.7",
-  "prisma": "^6.0.1"
+  }
 }

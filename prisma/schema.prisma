@@ -53,6 +53,7 @@ model places {
   share_url         String?             @db.VarChar(255)
   share_code        Bytes?              @db.Blob
   search_code       String?             @db.VarChar(255)
+  token             String?
   favorites         favorites[]
   places_categories places_categories[]
   schedule_places   schedule_places[]
