@@ -25,25 +25,25 @@ model categories {
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model favorites {
+  id              Int    @id @default(autoincrement()) // 單一主鍵
   favorite_user   Int
-  favorite_places Int
-  places          places @relation(fields: [favorite_places], references: [id], onUpdate: Restrict, map: "favorites_place_id")
-  users           users  @relation(fields: [favorite_user], references: [id], onUpdate: Restrict, map: "favorites_user_id")
+  favorite_places String
+  places          places @relation(fields: [favorite_places], references: [place_id])
+  users           users  @relation(fields: [favorite_user], references: [id])
 
-  @@id([favorite_user, favorite_places])
-  @@index([favorite_places], map: "favorites_place_id_idx")
-  @@index([favorite_user], map: "favorites_user_id_idx")
+  @@unique([favorite_user, favorite_places]) // 唯一約束取代複合主鍵
 }
 
 model places {
   id                Int                 @id @default(autoincrement())
+  place_id          String              @unique @db.VarChar(255)
   name              String              @db.VarChar(255)
   name_en           String?             @db.VarChar(255)
   description       String?             @db.VarChar(255)
   image_url         String?             @db.VarChar(2048)
-  country           String              @db.VarChar(45)
-  city              String              @db.VarChar(45)
-  address           String              @db.VarChar(255)
+  country           String?             @default("Unknown") @db.VarChar(45)
+  city              String?             @default("Unknown") @db.VarChar(45)
+  address           String?             @default("Unknown") @db.VarChar(255)
   phone             Int?
   website           String?             @db.VarChar(225)
   rating            Decimal?            @default(0.0) @db.Decimal(2, 1)
@@ -61,25 +61,24 @@ model places {
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model places_categories {
   id          Int        @id @default(autoincrement())
-  place_id    Int
+  place_id    String
   category_id Int
-  categories  categories @relation(fields: [category_id], references: [id], onUpdate: Restrict, map: "categories_category_id")
-  places      places     @relation(fields: [place_id], references: [id], onUpdate: Restrict, map: "categories_place_id")
+  categories  categories @relation(fields: [category_id], references: [id])
+  places      places     @relation(fields: [place_id], references: [place_id])
 
-  @@index([category_id], map: "categories_category_id_idx")
-  @@index([place_id], map: "categories_places_id_idx")
+  @@unique([place_id, category_id]) // 唯一約束
 }
 
 model schedule_places {
   id                 Int               @id @default(autoincrement())
-  place_id           Int
+  place_id           String
   schedule_id        Int
   which_date         DateTime          @db.Date
   arrival_time       DateTime?         @default(dbgenerated("'08:00:00'")) @db.Time(0)
   stay_time          DateTime          @default(dbgenerated("'01:00:00'")) @db.Time(0)
   transportation_way TransportationWay @default(PUBLIC_TRANSPORT)
   order              String            @unique(map: "order_UNIQUE") @db.VarChar(45)
-  places             places            @relation(fields: [place_id], references: [id], onUpdate: Restrict, map: "schedule_place_id")
+  places             places            @relation(fields: [place_id], references: [place_id], onUpdate: Restrict, map: "schedule_place_id") // 修改 references 為 place_id
   schedules          schedules         @relation(fields: [schedule_id], references: [id], onUpdate: Restrict, map: "schedule_schedule_id")
 
   @@index([place_id], map: "schedule_place_id_idx")
@@ -116,7 +115,8 @@ model users {
   description     String?           @db.VarChar(225)
   login_way       String?           @db.VarChar(45)
   create_at       DateTime?         @default(now()) @db.Timestamp(0)
-  token           String?           @db.VarChar(511)
+  token           String?
+  token_time      DateTime          @default(now()) @updatedAt @db.Timestamp(0)
   favorites       favorites[]
   users_bills     users_bills[]
   users_images    users_images[]
