@@ -1,6 +1,8 @@
 node_modules
 # Keep environment variables out of version control
 .env
+migrations
 
 API.md
-migrations
+_database.js
+_mapController.js
