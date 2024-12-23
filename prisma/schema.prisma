@@ -48,7 +48,7 @@ model places {
   website           String?             @db.VarChar(225)
   rating            Decimal?            @default(0.0) @db.Decimal(2, 1)
   business_hours    String?             @db.VarChar(255)
-  google_map_url    String?             @db.VarChar(255)
+  google_map_url    String?             @db.VarChar(511)
   web_map           String?             @db.VarChar(255)
   share_url         String?             @db.VarChar(255)
   share_code        Bytes?              @db.Blob
@@ -115,7 +115,7 @@ model users {
   description     String?           @db.VarChar(225)
   login_way       String?           @db.VarChar(45)
   create_at       DateTime?         @default(now()) @db.Timestamp(0)
-  token           String?
+  token           String?           @db.VarChar(511)
   token_time      DateTime          @default(now()) @updatedAt @db.Timestamp(0)
   favorites       favorites[]
   users_bills     users_bills[]
