@@ -10,18 +10,19 @@ export const searchPlaces = async (req, res) => {
 
   try {
     let location;
+    let placesID;
 
     if (city) {
       location = await getCoordinates(city);
-    } else if (latitude && longitude) {
+    }
+    if (latitude && longitude) {
       location = { lat: parseFloat(latitude), lng: parseFloat(longitude) };
     }
 
-    let placesID;
-
     if (query) {
       placesID = await textSearchPlaces(query, location);
-    } else if (type) {
+    }
+    if (type) {
       placesID = await nearbySearchPlaces(type, location);
     }
 
