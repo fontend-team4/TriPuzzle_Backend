@@ -13,7 +13,9 @@ import { router as profileRouter } from "./src/routes/profile.js";
 import { router as placesRouter } from "./src/routes/placesRouter.js";
 import { router as favoritesRouter } from "./src/routes/favorites.js";
 import { router as schedulePlaceRouter } from "./src/routes/schedulePlaces.js";
+import { router as uploadRouter } from "./src/routes/upload.js"; 
 import { config } from "./config.js";
+
 
 
 const app = express();
@@ -42,10 +44,13 @@ app.use("/auth", authRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/users", usersRouter);
 app.use("/users", profileRouter);
+app.use("/api/upload", uploadRouter);
+
 app.use("/places", placesRouter);
 app.use("/schedules", schedulesRouter);
 app.use("/favorites", favoritesRouter);
 app.use("/schedulePlaces", schedulePlaceRouter);
+
 
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");
@@ -82,6 +87,7 @@ app.use(
     path: [/^\/api/, /^\/users/, /^\/places/], // 不需要驗證的路徑
   })
 );
+
 
 // 全局錯誤處理中間件
 app.use((err, req, res, next) => {
