@@ -1,4 +1,4 @@
-import { getDirections, getDistanceMatrix } from "@/services/googleMaps";
+import { getDirections, getDistanceMatrix } from "../services/googleMaps.js";
 
 export const getRoute = async (req, res) => {
   try {

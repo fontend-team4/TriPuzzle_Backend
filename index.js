@@ -7,7 +7,7 @@ import authRoutes from "./src/routes/auth.js";
 import "./src/configs/passport.js";
 import { expressjwt } from "express-jwt";
 import { ZodError } from "zod";
-import { router as schedulesRouter } from "./src/routes/schedules.js"; // import { authenticate } from "./src/middlewares/auth.js";// import { authenticator } from "./src/middlewares/authenticator.js";
+import { router as schedulesRouter } from "./src/routes/schedules.js";
 import { router as usersRouter } from "./src/routes/users.js";
 import { router as profileRouter } from "./src/routes/profile.js";
 import { router as placesRouter } from "./src/routes/placesRouter.js";
