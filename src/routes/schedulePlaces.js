@@ -3,7 +3,6 @@ import {prisma} from '../configs/db.js';
 
 const router = express.Router();
 
-// GET: 取得所有 schedule_places
 router.get('/', async (req, res) => {
   try {
     const schedulePlaces = await prisma.schedule_places.findMany({
@@ -14,12 +13,10 @@ router.get('/', async (req, res) => {
     });
     res.status(200).json(schedulePlaces);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: '無法取得資料' });
   }
 });
 
-// POST: 新增一筆 schedule_place
 router.post('/', async (req, res) => {
   const {
     place_id,
@@ -50,12 +47,10 @@ router.post('/', async (req, res) => {
     });
     res.status(201).json(newSchedulePlace);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: '新增資料時發生錯誤', details: err.message });
   }
 });
 
-// PUT: 更新指定的 schedule_place
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const {
@@ -84,12 +79,10 @@ router.put('/:id', async (req, res) => {
     });
     res.status(200).json(updatedSchedulePlace);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: '更新資料時發生錯誤', details: err.message });
   }
 });
 
-// DELETE: 刪除指定的 schedule_place
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -103,7 +96,6 @@ router.delete('/:id', async (req, res) => {
       deletedSchedulePlace,
     });
   } catch (err) {
-    console.error(err);
     res.status(500).json({
       error: '刪除資料時發生錯誤',
       details: err.message,
