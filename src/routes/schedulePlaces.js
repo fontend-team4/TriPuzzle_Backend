@@ -1,5 +1,5 @@
 import express from 'express';
-import prisma from '../configs/db.js';
+import {prisma} from '../configs/db.js';
 
 const router = express.Router();
 
@@ -111,4 +111,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-export default router;
+export  {router};

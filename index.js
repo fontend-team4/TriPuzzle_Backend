@@ -12,7 +12,9 @@ import { router as usersRouter } from "./src/routes/users.js";
 import { router as profileRouter } from "./src/routes/profile.js";
 import { router as placesRouter } from "./src/routes/placesRouter.js";
 import { router as favoritesRouter } from "./src/routes/favorites.js";
+import { router as schedulePlaceRouter } from "./src/routes/schedulePlaces.js";
 import { config } from "./config.js";
+
 
 const app = express();
 dotenv.config();
@@ -43,6 +45,7 @@ app.use("/users", profileRouter);
 app.use("/places", placesRouter);
 app.use("/schedules", schedulesRouter);
 app.use("/favorites", favoritesRouter);
+app.use("/schedulePlaces", schedulePlaceRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");
