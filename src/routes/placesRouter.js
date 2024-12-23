@@ -2,13 +2,21 @@ import express from "express";
 import { searchPlaces } from "../controllers/placesController.js";
 import { getRoute, calculateDistances } from "../controllers/mapController.js";
 import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient(); // 必須確保 PrismaClient 被正確實例化
 
+const prisma = new PrismaClient(); 
 const router = express.Router();
 
 router.get("/search", searchPlaces);
 router.post("/directions", getRoute);
 router.post("/distances", calculateDistances);
+router.get("/", async (req, res) => {
+  try {
+    const rows = await prisma.places.findMany();
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 router.get('/', async (req, res) => {
   try {
@@ -35,10 +43,8 @@ router.post('/', async (req, res) => {
     });
     res.status(200).json({ message: '已新增景點', place });
   } catch (error) {
-    console.error('新增景點出現錯誤',error);
     res.status(500).json({ error: '新增景點出現錯誤', details: error.message });
   }
 });
-
 
 export { router };
