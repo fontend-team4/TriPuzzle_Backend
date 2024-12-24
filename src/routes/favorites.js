@@ -44,7 +44,6 @@ router.post('/', authenticate, async (req, res) => {
 
     res.json({ message: '已新增收藏', favorite });
   } catch (error) {
-    console.error('新增收藏時發生錯誤:', error);
     res.status(500).json({ error: 'Error adding favorite', details: error.message });
   }
 });
@@ -64,7 +63,6 @@ router.delete('/', authenticate, async (req, res) => {
     });
     res.json({ message: '已移除收藏' });
   } catch (error) {
-    console.error('移除收藏時發生錯誤:', error);
     res.status(500).json({ error: 'Error removing favorite', details: error.message });
   }
 });
@@ -87,7 +85,6 @@ router.get("/:id", authenticate, async (req, res) => {
     });
     res.json(favorites);
   } catch (error) {
-    console.error('取得收藏時發生錯誤:', error);
     res.status(500).json({ error: 'Error fetching favorites', details: error.message });
   }
 });

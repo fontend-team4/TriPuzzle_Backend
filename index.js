@@ -16,7 +16,6 @@ import { router as schedulePlaceRouter } from "./src/routes/schedulePlaces.js";
 import { router as uploadRouter } from "./src/routes/upload.js"; 
 import { config } from "./config.js";
 
-
 const app = express();
 dotenv.config();
 
