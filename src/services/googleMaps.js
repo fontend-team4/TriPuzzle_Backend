@@ -84,7 +84,7 @@ export const nearbySearchPlaces = async (type, location) => {
       params: {
         type,
         location,
-        radius: 20000,
+        radius: 5000,
         key: apiKey,
         language: "zh-TW",
       },
