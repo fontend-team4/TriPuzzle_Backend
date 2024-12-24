@@ -44,10 +44,12 @@ model places {
   country           String?             @default("Unknown") @db.VarChar(45)
   city              String?             @default("Unknown") @db.VarChar(45)
   address           String?             @default("Unknown") @db.VarChar(255)
-  phone             Int?
+  phone             String?
   website           String?             @db.VarChar(225)
   rating            Decimal?            @default(0.0) @db.Decimal(2, 1)
-  business_hours    String?             @db.VarChar(255)
+  opening_hours     Json                @default("[]")
+  photos            Json                @default("[]")
+  photos_length     Int?                @default(0)
   google_map_url    String?             @db.VarChar(511)
   web_map           String?             @db.VarChar(255)
   share_url         String?             @db.VarChar(255)
