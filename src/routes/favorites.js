@@ -8,7 +8,6 @@ const prisma = new PrismaClient();
 // 新增收藏
 router.post('/', authenticate, async (req, res) => {
   const { favorite_user, favorite_places } = req.body;
-
   try {
     // 檢查使用者是否存在
     const user = await prisma.users.findUnique({ where: { id: favorite_user } });
@@ -21,7 +20,6 @@ router.post('/', authenticate, async (req, res) => {
     if (!place) {
       return res.status(400).json({ message: '景點不存在，請先新增景點' });
     }
-
     // 檢查是否已存在收藏
     const existingFavorite = await prisma.favorites.findUnique({
       where: {
@@ -71,6 +69,7 @@ router.delete('/', authenticate, async (req, res) => {
   }
 });
 
+
 // 取得用戶收藏的所有景點
 router.get("/:id", authenticate, async (req, res) => {
   const userId = req.params.id; // 使用路由參數
@@ -92,5 +91,6 @@ router.get("/:id", authenticate, async (req, res) => {
     res.status(500).json({ error: 'Error fetching favorites', details: error.message });
   }
 });
+
 
 export { router };

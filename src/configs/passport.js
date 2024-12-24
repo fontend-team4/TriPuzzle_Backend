@@ -18,7 +18,7 @@ passport.use(
       callbackURL: 'http://localhost:3000/auth/google/callback',
       scope: ['profile', 'email'],
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async (profile, done) => {
       try {
         const email = profile.emails[0]?.value;
         if (!email) {
@@ -33,7 +33,6 @@ passport.use(
           const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
           expiresIn: "10h",
         });
-          // 存儲 token 到資料庫
         await prisma.users.update({
           where: { id: user.id },
           data: { token },
@@ -75,7 +74,7 @@ passport.use(
       callbackURL: 'http://localhost:3000/api/auth/line/callback',
       scope: ['profile', 'openid', 'email'],
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async ( profile, done) => {
       try {
         const email = profile.email || `${profile.id}@line.com`;
         let user = await prisma.users.findUnique({ where: { email } });
@@ -88,7 +87,6 @@ passport.use(
               login_way: 'LINE',
             },
           });
-          // 生成 JWT
           const tokenPayload = {
             id: user.id,
             email: user.email,
@@ -96,7 +94,6 @@ passport.use(
             const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
             expiresIn: "10h",
           });
-            // 存儲 token 到資料庫
           await prisma.users.update({
             where: { id: user.id },
             data: { token },
@@ -111,7 +108,6 @@ passport.use(
               login_way: 'LINE',
             },
           });
-          // 生成 JWT
           const tokenPayload = {
             id: user.id,
             email: user.email,
@@ -119,7 +115,6 @@ passport.use(
             const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
             expiresIn: "10h",
           });
-            // 存儲 token 到資料庫
           await prisma.users.update({
             where: { id: user.id },
             data: { token },
@@ -146,7 +141,6 @@ passport.deserializeUser(async (id, done) => {
       done(new Error('User not found'), null);
     }
   } catch (err) {
-    console.error('Error during deserialization:', err);
     done(err, null);
   }
 });
