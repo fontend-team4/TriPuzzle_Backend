@@ -14,7 +14,6 @@ import { router as placesRouter } from "./src/routes/placesRouter.js";
 import { router as favoritesRouter } from "./src/routes/favorites.js";
 import { router as uploadRouter } from "./src/routes/upload.js"; 
 import { config } from "./config.js";
-import { router as placesRouter } from "./src/routes/placesRouter.js";
 
 
 const app = express();
