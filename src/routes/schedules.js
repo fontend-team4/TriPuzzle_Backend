@@ -1,20 +1,18 @@
 import express from "express";
 const router = express.Router();
-// import { prisma } from "../configs/db.js";
 import { authenticate } from "../middlewares/auth.js";
 import { verifyOwner } from "../middlewares/verifyOwner.js";
-
 import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient(); // 必須確保 PrismaClient 被正確實例化
+
+const prisma = new PrismaClient();
 
 // 尋找個人行程（根據create_by）
-// http://localhost:3000/schedules
 router.get("/", authenticate, async (req, res) => {
   try {
-    const userId = req.user.id; // 從 JWT 中獲取當前用戶的 ID
+    const userId = req.user.id;
 
     const rows = await prisma.schedules.findMany({
-      where: { create_by: userId }, // 只查詢 create_by 為當前用戶的行程
+      where: { create_by: userId },
     });
 
     if (rows.length === 0) {
@@ -28,9 +26,8 @@ router.get("/", authenticate, async (req, res) => {
 });
 
 // 尋找單一行程（只能找到自己的，只是為了把每個schedule編號用）
-// http://localhost:3000/schedules/:id
 router.get("/:id", authenticate, verifyOwner("schedules"), (req, res) => {
-  res.status(200).json(req.resource); // 使用中間件附加的資源
+  res.status(200).json(req.resource);
 });
 
 // 讓登入的用戶一自己的身份建立新行程
@@ -98,7 +95,7 @@ router.patch(
 
       // 更新行程
       const updatedSchedule = await prisma.schedules.update({
-        where: { id: req.resource.id }, // 使用中間件附加的資源
+        where: { id: req.resource.id },
         data: {
           ...(title && { title }),
           ...(schedule_note && { schedule_note }),
