@@ -22,7 +22,6 @@ passport.use(
       try {
         const email = profile.emails[0]?.value;
         if (!email) {
-          console.error("No email found in Google profile");
           return done(new Error("No email found in Google profile"), null);
         }
         let user = await prisma.users.findUnique({ where: { email } });
@@ -38,7 +37,6 @@ passport.use(
           });
         }
         if (!user || !user.id) {
-          console.error("Invalid user or missing ID");
           return done(new Error("User or ID is invalid"), null);
         }
         const tokenPayload = { id: user.id, email: user.email };
