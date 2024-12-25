@@ -33,7 +33,7 @@ router.get("/user/:id", authenticate, async (req, res) => {
   try {
     const userSchedules = await prisma.users_schedules.findMany({
       where: { user_id: userId },
-      include: { schedules: true }, // 包括行程详情
+      include: { schedules: true }, 
     });
     res.json(userSchedules);
   } catch (error) {
@@ -44,7 +44,7 @@ router.get("/user/:id", authenticate, async (req, res) => {
   }
 });
 
-// 加入共編行程
+// 加入共編
 router.get("/join/:shareToken", authenticate, async (req, res) => {
   const { shareToken } = req.params;
   const userId = req.user.id; // 從 authenticate 中間件獲取使用者 ID
@@ -125,5 +125,57 @@ router.post("/share/:scheduleId", authenticate, async (req, res) => {
       .json({ error: "Error generating share link.", details: error.message });
   }
 });
+
+// 退出共編
+router.delete("/:id", authenticate, verifyOwner("schedules"), async (req, res) => {
+    try {
+      const userId = req.user.id; // 請求者的 ID
+      const usersSchedulesId = parseInt(req.params.id, 10); // users_schedules 的 ID
+  
+      if (isNaN(usersSchedulesId)) {
+        return res.status(400).json({ message: "無效的 ID" });
+      }
+  
+      // 確認共編是否存在
+      const userSchedule = await prisma.users_schedules.findUnique({
+        where: { id: usersSchedulesId },
+      });
+  
+      if (!userSchedule) {
+        return res.status(404).json({ message: "共編記錄不存在" });
+      }
+  
+      // 確認該行程是否存在
+      const schedule = await prisma.schedules.findUnique({
+        where: { id: userSchedule.schedule_id },
+      });
+  
+      if (!schedule) {
+        return res.status(404).json({ message: "行程不存在" });
+      }
+  
+
+      const isOwner = schedule.create_by === userId; // 是否為行程創建者
+      const isSelf = userSchedule.user_id === userId; // 是否是要退出共編的用戶自己
+  
+      if (!isOwner && !isSelf) {
+        return res.status(403).json({ message: "您無權執行此操作" });
+      }
+  
+ 
+      if (!isOwner && userSchedule.user_id === schedule.create_by) {
+        return res.status(403).json({ message: "共編者無法踢掉行程創建者" });
+      }
+  
+
+      await prisma.users_schedules.delete({
+        where: { id: usersSchedulesId },
+      });
+  
+      res.status(200).json({ message: "成功退出共編" });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
 
 export { router };
