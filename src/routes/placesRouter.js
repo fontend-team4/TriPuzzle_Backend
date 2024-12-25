@@ -9,14 +9,6 @@ const router = express.Router();
 router.get("/search", searchPlaces);
 router.post("/directions", getRoute);
 router.post("/distances", calculateDistances);
-router.get("/", async (req, res) => {
-  try {
-    const rows = await prisma.places.findMany();
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 
 router.get('/', async (req, res) => {
   try {
