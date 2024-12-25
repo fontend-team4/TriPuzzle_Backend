@@ -8,16 +8,17 @@ import "./src/configs/passport.js";
 import { expressjwt } from "express-jwt";
 import { ZodError } from "zod";
 import { router as schedulesRouter } from "./src/routes/schedules.js";
-// import { authenticate } from "./src/middlewares/auth.js";
-// import { authenticator } from "./src/middlewares/authenticator.js";
 import { router as usersRouter } from "./src/routes/users.js";
 import { router as profileRouter } from "./src/routes/profile.js";
-import { router as favoritesRouter } from "./src/routes/favorites.js";
-import { config } from "./config.js";
 import { router as placesRouter } from "./src/routes/placesRouter.js";
+import { router as favoritesRouter } from "./src/routes/favorites.js";
+import { router as schedulePlaceRouter } from "./src/routes/schedulePlaces.js";
+import { router as uploadRouter } from "./src/routes/upload.js";
+import { config } from "./config.js";
 
 const app = express();
 dotenv.config();
+const HOST_URL = process.env.HOST_URL;
 
 app.use(
   session({
@@ -26,10 +27,10 @@ app.use(
     saveUninitialized: true,
   })
 );
-// CORS 設定
+
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: HOST_URL,
     methods: ["GET", "POST", "PATCH", "DELETE"],
   })
 );
@@ -48,6 +49,8 @@ app.use("/auth", authRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/users", usersRouter);
 app.use("/users", profileRouter);
+app.use("/api/upload", uploadRouter);
+
 
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");
@@ -85,16 +88,12 @@ app.use(
   })
 );
 
-// 用戶路由
+
 app.use("/users", usersRouter);
-
-//places路由
 app.use("/places", placesRouter);
-app.use("/schedules", schedulesRouter); // 確保路徑與導入正確
-
-// 收藏路由
+app.use("/schedules", schedulesRouter); 
+app.use("/schedulePlaces", schedulePlaceRouter);
 app.use("/favorites", favoritesRouter);
-
 // 全局錯誤處理中間件
 app.use((err, req, res, next) => {
   // Zod 驗證錯誤處理
