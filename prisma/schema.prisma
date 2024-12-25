@@ -20,96 +20,92 @@ model bills {
 model categories {
   id                Int                 @id @default(autoincrement())
   name              String?             @db.VarChar(100)
-  places_categories places_categories[] @ignore
+  places_categories places_categories[]
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model favorites {
+  id              Int    @id @default(autoincrement()) // 單一主鍵
   favorite_user   Int
-  favorite_places Int
-  places          places @relation(fields: [favorite_places], references: [id], onUpdate: Restrict, map: "favorites_place_id")
-  users           users  @relation(fields: [favorite_user], references: [id], onUpdate: Restrict, map: "favorites_user_id")
+  favorite_places String
+  places          places @relation(fields: [favorite_places], references: [place_id])
+  users           users  @relation(fields: [favorite_user], references: [id])
 
-  @@index([favorite_places], map: "favorites_place_id_idx")
-  @@index([favorite_user], map: "favorites_user_id_idx")
-  @@ignore
+  @@unique([favorite_user, favorite_places]) // 唯一約束取代複合主鍵
 }
 
 model places {
   id                Int                 @id @default(autoincrement())
+  place_id          String              @unique @db.VarChar(255)
   name              String              @db.VarChar(255)
   name_en           String?             @db.VarChar(255)
-  description       String?             @db.VarChar(255)
-  image_url         String              @db.VarChar(255)
-  country           String              @db.VarChar(45)
-  city              String              @db.VarChar(45)
-  address           String              @db.VarChar(255)
-  phone             Int?
+  summary           String?             @db.VarChar(255)
+  image_url         String?             @db.VarChar(2048)
+  country           String?             @default("Unknown") @db.VarChar(45)
+  city              String?             @default("Unknown") @db.VarChar(45)
+  address           String?             @default("Unknown") @db.VarChar(255)
+  location          String?             @default("Unknown") @db.VarChar(255)
+  phone             String?
   website           String?             @db.VarChar(225)
   rating            Decimal?            @default(0.0) @db.Decimal(2, 1)
-  business_hours    String?             @db.VarChar(255)
-  google_map_url    String?             @db.VarChar(255)
+  opening_hours     Json                @default("[]")
+  photos            Json                @default("[]")
+  photos_length     Int?                @default(0)
+  geometry          Json                @default("[]")
+  google_map_url    String?             @db.VarChar(511)
   web_map           String?             @db.VarChar(255)
   share_url         String?             @db.VarChar(255)
   share_code        Bytes?              @db.Blob
   search_code       String?             @db.VarChar(255)
-  favorites         favorites[]         @ignore
-  places_categories places_categories[] @ignore
+  token             String?
+  favorites         favorites[]
+  places_categories places_categories[]
   schedule_places   schedule_places[]
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model places_categories {
-  place_id    Int
+  id          Int        @id @default(autoincrement())
+  place_id    String
   category_id Int
-  categories  categories @relation(fields: [category_id], references: [id], onUpdate: Restrict, map: "categories_category_id")
-  places      places     @relation(fields: [place_id], references: [id], onUpdate: Restrict, map: "categories_place_id")
+  categories  categories @relation(fields: [category_id], references: [id])
+  places      places     @relation(fields: [place_id], references: [place_id])
 
-  @@index([category_id], map: "categories_category_id_idx")
-  @@index([place_id], map: "categories_places_id_idx")
-  @@ignore
+  @@unique([place_id, category_id]) // 唯一約束
 }
 
 model schedule_places {
-  place_id           Int
+  id                 Int               @id @default(autoincrement())
+  place_id           String
   schedule_id        Int
-  which_date         DateTime  @db.Date
-  arrival_time       DateTime? @default(dbgenerated("'08:00:00'")) @db.Time(0)
-  stay_time          DateTime  @default(dbgenerated("'01:00:00'")) @db.Time(0)
+  which_date         DateTime          @db.Date
+  arrival_time       DateTime?         @default(dbgenerated("'08:00:00'")) @db.Time(0)
+  stay_time          DateTime          @default(dbgenerated("'01:00:00'")) @db.Time(0)
   transportation_way TransportationWay @default(PUBLIC_TRANSPORT)
-  order              String    @unique(map: "order_UNIQUE") @db.VarChar(45)
-  places             places    @relation(fields: [place_id], references: [id], onUpdate: Restrict, map: "schedule_place_id")
-  schedules          schedules @relation(fields: [schedule_id], references: [id], onUpdate: Restrict, map: "schedule_schedule_id")
+  order              String            @unique(map: "order_UNIQUE") @db.VarChar(45)
+  places             places            @relation(fields: [place_id], references: [place_id], onUpdate: Restrict, map: "schedule_place_id") // 修改 references 為 place_id
+  schedules          schedules         @relation(fields: [schedule_id], references: [id], onUpdate: Restrict, map: "schedule_schedule_id")
 
   @@index([place_id], map: "schedule_place_id_idx")
   @@index([schedule_id], map: "schedule_schedule_id_idx")
 }
 
-enum TransportationWay {
-  PUBLIC_TRANSPORT
-  WALK
-  CAR
-  MOTORBIKE
-  CUSTOM 
-}
-
-
 model schedules {
-  id              Int               @id @default(autoincrement())
-  title           String            @db.VarChar(45)
-  create_by       Int           
-  co_edit_url     String?           @db.VarChar(225)
-  co_edit_qrcode  Bytes?            @db.Blob
-  schedule_note   String?           @db.Text
-  image_url       String?           @db.VarChar(255)
-  start_date      DateTime          @db.Date
-  end_date        DateTime          @db.Date
-  transportation_way  TransportationWay @default(PUBLIC_TRANSPORT)
-  created_at      DateTime?         @default(now()) @db.Timestamp(0)
-  schedule_places schedule_places[]
-  users_bills     users_bills[]
-  users_images    users_images[]
-  users_schedules users_schedules[] @ignore
+  id                 Int               @id @default(autoincrement())
+  title              String            @db.VarChar(45)
+  create_by          Int
+  co_edit_url        String?           @db.VarChar(225)
+  co_edit_qrcode     Bytes?            @db.Blob
+  schedule_note      String?           @db.Text
+  image_url          String?           @db.VarChar(255)
+  start_date         DateTime          @db.Date
+  end_date           DateTime          @db.Date
+  transportation_way TransportationWay @default(PUBLIC_TRANSPORT)
+  created_at         DateTime?         @default(now()) @db.Timestamp(0)
+  schedule_places    schedule_places[]
+  users_bills        users_bills[]
+  users_images       users_images[]
+  users_schedules    users_schedules[]
 }
 
 model users {
@@ -118,16 +114,18 @@ model users {
   email           String            @unique(map: "email_UNIQUE") @db.VarChar(45)
   password        String            @db.VarChar(255)
   profile_pic_url String?           @db.VarChar(255)
-  phone           Int?
+  phone           String?
   gender          users_gender?
   birthday        DateTime?         @db.Date
   description     String?           @db.VarChar(225)
   login_way       String?           @db.VarChar(45)
   create_at       DateTime?         @default(now()) @db.Timestamp(0)
-  favorites       favorites[]       @ignore
+  token           String?           @db.VarChar(511)
+  token_time      DateTime          @default(now()) @updatedAt @db.Timestamp(0)
+  favorites       favorites[]
   users_bills     users_bills[]
   users_images    users_images[]
-  users_schedules users_schedules[] @ignore
+  users_schedules users_schedules[]
 }
 
 model users_bills {
@@ -166,9 +164,23 @@ model users_schedules {
   schedules   schedules @relation(fields: [schedule_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "schedules_schedule_id")
   users       users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "schedules_user_id")
 
+  @@id([schedule_id, user_id])
   @@index([schedule_id], map: "fk_schedules_id_idx")
   @@index([user_id], map: "fk_user_id_idx")
-  @@ignore
+}
+
+model tokenblacklist {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique(map: "tokenBlacklist_token_key")
+  createdAt DateTime @default(now())
+}
+
+enum TransportationWay {
+  PUBLIC_TRANSPORT
+  WALK
+  CAR
+  MOTORBIKE
+  CUSTOM
 }
 
 enum users_gender {
