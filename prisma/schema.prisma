@@ -48,7 +48,7 @@ model places {
   phone             String?
   website           String?             @db.VarChar(225)
   rating            Decimal?            @default(0.0) @db.Decimal(2, 1)
-  business_hours    Json                @default("[]")
+  opening_hours     Json                @default("[]")
   photos            Json                @default("[]")
   photos_length     Int?                @default(0)
   geometry          Json                @default("[]")
