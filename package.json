@@ -8,8 +8,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon run index.js",
-    "start":"npx serve dist"
+    "dev": "nodemon index.js"
   },
   "author": "",
   "license": "ISC",
