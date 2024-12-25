@@ -48,6 +48,7 @@ passport.use(
           data: { token },
         });
         return done(null, updatedUser);
+
       } catch (err) {
         return done(err, null);
       }
