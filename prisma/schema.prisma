@@ -101,6 +101,7 @@ model schedules {
   users_bills        users_bills[]
   users_images       users_images[]
   users_schedules    users_schedules[]
+  share_token        String?            @unique @db.VarChar(225)
 }
 
 model users {
@@ -162,6 +163,7 @@ model users_schedules {
   @@id([schedule_id, user_id])
   @@index([schedule_id], map: "fk_schedules_id_idx")
   @@index([user_id], map: "fk_user_id_idx")
+  @@unique([schedule_id, user_id], name: "schedule_user_unique")
 }
 
 model tokenblacklist {

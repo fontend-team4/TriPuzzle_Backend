@@ -13,6 +13,7 @@ import { router as profileRouter } from "./src/routes/profile.js";
 import { router as placesRouter } from "./src/routes/placesRouter.js";
 import { router as favoritesRouter } from "./src/routes/favorites.js";
 import { router as schedulePlaceRouter } from "./src/routes/schedulePlaces.js";
+import { router as usersSchedulesRouter } from "./src/routes/usersSchedules.js";
 import { router as uploadRouter } from "./src/routes/upload.js";
 import { config } from "./config.js";
 
@@ -49,6 +50,7 @@ app.use("/places", placesRouter);
 app.use("/schedules", schedulesRouter);
 app.use("/favorites", favoritesRouter);
 app.use("/schedulePlaces", schedulePlaceRouter);
+app.use("/usersSchedules", usersSchedulesRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");

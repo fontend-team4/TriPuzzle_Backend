@@ -1,10 +1,10 @@
-import passport from 'passport';
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { Strategy as LineStrategy } from 'passport-line';
-import { PrismaClient } from '@prisma/client';
-import dotenv from 'dotenv';
-import jwt from 'jsonwebtoken'
-import { config } from '../../config.js';
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Strategy as LineStrategy } from "passport-line";
+import { PrismaClient } from "@prisma/client";
+import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
+import { config } from "../../config.js";
 
 dotenv.config();
 
@@ -15,14 +15,14 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: 'http://localhost:3000/auth/google/callback',
-      scope: ['profile', 'email'],
+      callbackURL: "http://localhost:3000/auth/google/callback",
+      scope: ["profile", "email"],
     },
     async (profile, done) => {
       try {
         const email = profile.emails[0]?.value;
         if (!email) {
-          return done(new Error('No email found in Google profile'), null);
+          return done(new Error("No email found in Google profile"), null);
         }
         let user = await prisma.users.findUnique({ where: { email } });
         // 生成 JWT
@@ -30,7 +30,7 @@ passport.use(
           id: user.id,
           email: user.email,
         };
-          const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
+        const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
           expiresIn: "10h",
         });
         await prisma.users.update({
@@ -44,7 +44,7 @@ passport.use(
             data: {
               name: profile.displayName,
               profile_pic_url: profile.photos ? profile.photos[0].value : null,
-              login_way: 'GOOGLE',
+              login_way: "GOOGLE",
             },
           });
         } else {
@@ -54,7 +54,7 @@ passport.use(
               name: profile.displayName,
               profile_pic_url: profile.photos ? profile.photos[0].value : null,
               password: "",
-              login_way: 'GOOGLE',
+              login_way: "GOOGLE",
             },
           });
         }
@@ -71,10 +71,10 @@ passport.use(
     {
       channelID: process.env.LINE_CHANNEL_ID,
       channelSecret: process.env.LINE_CHANNEL_SECRET,
-      callbackURL: 'http://localhost:3000/api/auth/line/callback',
-      scope: ['profile', 'openid', 'email'],
+      callbackURL: "http://localhost:3000/api/auth/line/callback",
+      scope: ["profile", "openid", "email"],
     },
-    async ( profile, done) => {
+    async (profile, done) => {
       try {
         const email = profile.email || `${profile.id}@line.com`;
         let user = await prisma.users.findUnique({ where: { email } });
@@ -84,14 +84,14 @@ passport.use(
             data: {
               name: profile.displayName,
               profile_pic_url: profile.pictureUrl || null,
-              login_way: 'LINE',
+              login_way: "LINE",
             },
           });
           const tokenPayload = {
             id: user.id,
             email: user.email,
           };
-            const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
+          const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
             expiresIn: "10h",
           });
           await prisma.users.update({
@@ -105,14 +105,14 @@ passport.use(
               name: profile.displayName,
               profile_pic_url: profile.pictureUrl || null,
               password: "",
-              login_way: 'LINE',
+              login_way: "LINE",
             },
           });
           const tokenPayload = {
             id: user.id,
             email: user.email,
           };
-            const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
+          const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
             expiresIn: "10h",
           });
           await prisma.users.update({
@@ -138,7 +138,7 @@ passport.deserializeUser(async (id, done) => {
     if (user) {
       done(null, user);
     } else {
-      done(new Error('User not found'), null);
+      done(new Error("User not found"), null);
     }
   } catch (err) {
     done(err, null);
