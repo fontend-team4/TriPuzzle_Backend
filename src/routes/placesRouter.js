@@ -19,6 +19,21 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.get('/:place_id', async (req, res) => {
+  try{
+    const place = await prisma.places.findUnique({
+      where: { place_id: req.params.place_id },
+    });
+    if (!place) {
+      return res.status(404).json({ error: '找不到景點' });
+    }
+    res.json(place);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 
 router.post('/', async (req, res) => {
   const { place_id, name, address } = req.body;
