@@ -101,7 +101,8 @@ model schedules {
   users_bills        users_bills[]
   users_images       users_images[]
   users_schedules    users_schedules[]
-  share_token        String?            @unique @db.VarChar(225)
+  share_token        String?           @unique @db.VarChar(225)
+  total_users        Int               @default(1)
 }
 
 model users {
