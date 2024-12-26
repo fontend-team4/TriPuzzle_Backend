@@ -1,9 +1,11 @@
-import express from 'express';
-import {prisma} from '../configs/db.js';
+import express from "express";
+import { prisma } from "../configs/db.js";
+import { authenticate } from "../middlewares/auth.js";
+import { verifyOwner } from "../middlewares/verifyOwner.js";
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const schedulePlaces = await prisma.schedule_places.findMany({
       include: {
@@ -13,11 +15,11 @@ router.get('/', async (req, res) => {
     });
     res.status(200).json(schedulePlaces);
   } catch (err) {
-    res.status(500).json({ error: '無法取得資料' });
+    res.status(500).json({ error: "無法取得資料" });
   }
 });
 
-router.post('/', async (req, res) => {
+router.post("/", async (req, res) => {
   const {
     place_id,
     schedule_id,
@@ -25,7 +27,7 @@ router.post('/', async (req, res) => {
     arrival_time,
     stay_time,
     transportation_way,
-    order
+    order,
   } = req.body;
   try {
     const arrivalDateTime = new Date(`${which_date}T${arrival_time}Z`);
@@ -42,24 +44,19 @@ router.post('/', async (req, res) => {
       },
       include: {
         places: true,
-        schedules: true
+        schedules: true,
       },
     });
     res.status(201).json(newSchedulePlace);
   } catch (err) {
-    res.status(500).json({ error: '新增資料時發生錯誤', details: err.message });
+    res.status(500).json({ error: "新增資料時發生錯誤", details: err.message });
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const {
-    which_date,
-    arrival_time,
-    stay_time,
-    transportation_way,
-    order,
-  } = req.body;
+  const { which_date, arrival_time, stay_time, transportation_way, order } =
+    req.body;
   try {
     const updatedSchedulePlace = await prisma.schedule_places.update({
       where: {
@@ -79,11 +76,11 @@ router.put('/:id', async (req, res) => {
     });
     res.status(200).json(updatedSchedulePlace);
   } catch (err) {
-    res.status(500).json({ error: '更新資料時發生錯誤', details: err.message });
+    res.status(500).json({ error: "更新資料時發生錯誤", details: err.message });
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete("/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const deletedSchedulePlace = await prisma.schedule_places.delete({
@@ -92,15 +89,15 @@ router.delete('/:id', async (req, res) => {
       },
     });
     res.status(200).json({
-      message: '資料刪除成功',
+      message: "資料刪除成功",
       deletedSchedulePlace,
     });
   } catch (err) {
     res.status(500).json({
-      error: '刪除資料時發生錯誤',
+      error: "刪除資料時發生錯誤",
       details: err.message,
     });
   }
 });
 
-export  {router};
+export { router };

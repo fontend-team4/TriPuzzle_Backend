@@ -18,7 +18,7 @@ import { config } from "./config.js";
 
 const app = express();
 dotenv.config();
-const HOST_URL = process.env.HOST_URL;
+const HOST_URL = process.env.HOST_URL || "http://localhost:5173";
 
 app.use(
   session({
@@ -34,12 +34,12 @@ app.use(
     methods: ["GET", "POST", "PATCH", "DELETE"],
   })
 );
-// app.use((req, res, next) => {
-//   res.setHeader("Access-Control-Allow-Origin", "*");
-//   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-//   next();
-// });
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
 app.use(express.json());
 app.use(passport.initialize());
 app.use(express.urlencoded({ extended: false }));
@@ -50,7 +50,6 @@ app.use("/api/auth", authRoutes);
 app.use("/users", usersRouter);
 app.use("/users", profileRouter);
 app.use("/api/upload", uploadRouter);
-
 
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");
@@ -88,10 +87,9 @@ app.use(
   })
 );
 
-
 app.use("/users", usersRouter);
 app.use("/places", placesRouter);
-app.use("/schedules", schedulesRouter); 
+app.use("/schedules", schedulesRouter);
 app.use("/schedulePlaces", schedulePlaceRouter);
 app.use("/favorites", favoritesRouter);
 // 全局錯誤處理中間件
