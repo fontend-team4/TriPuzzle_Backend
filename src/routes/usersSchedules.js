@@ -133,41 +133,53 @@ router.get("/:id/users", authenticate, async (req, res) => {
       return res.status(404).json({ message: "Schedule not found." });
     }
 
-    // 查找建立者詳細資訊
+    // 查找建立者詳細資訊，包含 profile_pic_url
     const creator = await prisma.users.findUnique({
       where: { id: schedule.create_by },
       select: {
         id: true,
         name: true,
         email: true,
+        profile_pic_url: true, // 新增字段
       },
     });
 
-    // 查找共編者資訊，通過關聯查詢
+    // 查找共編者資訊，包含 profile_pic_url
     const sharedUsers = await prisma.users_schedules.findMany({
       where: { schedule_id: scheduleId },
       include: {
         users: {
-          // 注意這裡改成正確的關聯名稱
           select: {
             id: true,
             name: true,
             email: true,
+            profile_pic_url: true, // 新增字段
           },
         },
       },
     });
 
-    // 計算總人數（創建者 + 共編者）
-    const totalUsers = 1 + sharedUsers.length;
-
     // 整理返回的數據
     const result = {
       schedule_id: schedule.id,
       title: schedule.title,
-      creator,
-      sharedUsers: sharedUsers.map((item) => item.users), // 取關聯的 `users`
-      totalUsers, // 新增欄位
+      creator: {
+        id: creator.id,
+        name: creator.name,
+        email: creator.email,
+        ...(creator.profile_pic_url
+          ? { profile_pic_url: creator.profile_pic_url }
+          : {}),
+      },
+      sharedUsers: sharedUsers.map((item) => ({
+        id: item.users.id,
+        name: item.users.name,
+        email: item.users.email,
+        ...(item.users.profile_pic_url
+          ? { profile_pic_url: item.users.profile_pic_url }
+          : {}),
+      })),
+      totalUsers: 1 + sharedUsers.length,
     };
 
     res.json(result);
