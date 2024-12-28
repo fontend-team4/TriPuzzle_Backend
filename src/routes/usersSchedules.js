@@ -50,24 +50,75 @@ router.get("/", authenticate, async (req, res) => {
   }
 });
 
-// 加入共編
+// 驗證行程資訊 (用於前端顯示)
 router.get("/join/:shareToken", authenticate, async (req, res) => {
   const { shareToken } = req.params;
-  const userId = req.user.id; // 從 authenticate 中間件獲取使用者 ID
+  const userId = req.user.id;
 
   try {
-    // 驗證 share_token 並解析行程 ID
     const { scheduleId } = verifyShareToken(shareToken);
 
-    // 確認行程是否存在
     const schedule = await prisma.schedules.findUnique({
       where: { id: Number(scheduleId) },
     });
+
     if (!schedule) {
       return res.status(404).json({ error: "Schedule not found." });
     }
 
-    // 檢查使用者是否已加入
+    // 如果是行程創建者
+    if (schedule.creator_id === userId) {
+      return res
+        .status(400)
+        .json({ error: "You are the creator of this schedule." });
+    }
+
+    // 檢查是否已加入
+    const existingRelation = await prisma.users_schedules.findUnique({
+      where: {
+        schedule_id_user_id: {
+          schedule_id: schedule.id,
+          user_id: userId,
+        },
+      },
+    });
+
+    if (existingRelation) {
+      return res
+        .status(400)
+        .json({ error: "User already joined this schedule." });
+    }
+
+    res.json({ schedule }); // 返回行程資訊
+  } catch (error) {
+    res.status(500).json({ error: "Error verifying schedule.", details: error.message });
+  }
+});
+
+// 加入行程 (按下「好啊」時觸發)
+router.post("/join/:shareToken", authenticate, async (req, res) => {
+  const { shareToken } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const { scheduleId } = verifyShareToken(shareToken);
+
+    const schedule = await prisma.schedules.findUnique({
+      where: { id: Number(scheduleId) },
+    });
+
+    if (!schedule) {
+      return res.status(404).json({ error: "Schedule not found." });
+    }
+
+    // 如果是行程創建者
+    if (schedule.creator_id === userId) {
+      return res
+        .status(400)
+        .json({ error: "You are the creator of this schedule." });
+    }
+
+    // 檢查是否已加入
     const existingRelation = await prisma.users_schedules.findUnique({
       where: {
         schedule_id_user_id: {
@@ -102,13 +153,14 @@ router.get("/join/:shareToken", authenticate, async (req, res) => {
       },
     });
 
-    res.json({ message: "You have joined the schedule.", schedule });
+    res.json({ message: "You have joined the schedule." });
   } catch (error) {
     res
       .status(500)
       .json({ error: "Error joining schedule.", details: error.message });
   }
 });
+
 
 // 查詢行程的所有使用者（建立者和共編者）
 router.get("/:id/users", authenticate, async (req, res) => {
@@ -214,7 +266,7 @@ router.post("/share/:scheduleId", authenticate, async (req, res) => {
     });
 
     // 返回分享網址
-    const shareUrl = `http://localhost:3000/usersSchedules/join/${shareToken}`;
+    const shareUrl = `http://localhost:5173/planner/join/${shareToken}`;
     res.json({ shareUrl });
   } catch (error) {
     res
