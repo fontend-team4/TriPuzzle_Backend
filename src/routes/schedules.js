@@ -71,7 +71,6 @@ router.post("/", authenticate, async (req, res) => {
       start_date,
       end_date,
       transportation_way,
-      places,
     } = req.body;
 
     const userId = req.user.id;
@@ -90,12 +89,12 @@ router.post("/", authenticate, async (req, res) => {
         start_date: formattedStartDate,
         end_date: formattedEndDate,
         transportation_way,
-        schedule_places: {
-          create: places.map((placeId) => ({
-            place_id: placeId,
-            which_date: formattedStartDate,
-          })),
-        },
+        // schedule_places: {
+        //   create: places.map((placeId) => ({
+        //     place_id: placeId,
+        //     which_date: formattedStartDate,
+        //   })),
+        // },
       },
     });
 
