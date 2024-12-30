@@ -20,7 +20,6 @@ router.get("/", authenticate, async (req, res) => {
           },
         },
       },
-
     });
 
     if (rows.length === 0) {
@@ -73,6 +72,8 @@ router.post("/", authenticate, async (req, res) => {
       start_date,
       end_date,
       transportation_way,
+      places,
+
     } = req.body;
 
     const userId = req.user.id;
@@ -82,7 +83,6 @@ router.post("/", authenticate, async (req, res) => {
 
 
     const newSchedule = await prisma.schedules.create({
-
       data: {
         title,
         create_by: userId,

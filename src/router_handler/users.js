@@ -190,4 +190,3 @@ const check = async (req, res) => {
 
 
 export { register, login, logout, check };
-

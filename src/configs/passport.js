@@ -1,4 +1,3 @@
-
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as LineStrategy } from "passport-line";
@@ -6,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { config } from "../../config.js";
+
 
 dotenv.config();
 
@@ -16,7 +16,6 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-
       callbackURL: process.env.GOOGLE_CALLBACK_URL,
       scope: ["profile", "email"],
     },
@@ -29,7 +28,6 @@ passport.use(
           return done(new Error("No email found in Google profile"), null);
         }
         let user = await prisma.users.findUnique({ where: { email } });
-
         if (!user) {
           user = await prisma.users.create({
             data: {
@@ -133,7 +131,6 @@ passport.deserializeUser(async (id, done) => {
       done(null, user);
     } else {
       done(new Error('User not found'), null);
-
     }
   } catch (err) {
     done(err, null);
