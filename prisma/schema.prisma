@@ -108,6 +108,8 @@ model schedules {
   users_schedules    users_schedules[]
   share_token        String?           @unique @db.VarChar(225)
   total_users        Int               @default(1)
+
+  
 }
 
 model users {
@@ -176,11 +178,6 @@ model tokenblacklist {
   id        Int      @id @default(autoincrement())
   token     String   @unique(map: "tokenBlacklist_token_key")
   createdAt DateTime @default(now())
-
-
-  @@id([schedule_id, user_id])
-  @@index([schedule_id], map: "fk_schedules_id_idx")
-  @@index([user_id], map: "fk_user_id_idx")
 }
 
 
