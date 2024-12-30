@@ -5,9 +5,13 @@ import { verifyOwner } from "../middlewares/verifyOwner.js";
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.get("/", authenticate, async (req, res) => {
+  const { schedule_id } = req.query;
   try {
     const schedulePlaces = await prisma.schedule_places.findMany({
+      where: {
+        schedule_id: parseInt(schedule_id),
+      },
       include: {
         places: true,
         schedules: true,
@@ -19,7 +23,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", authenticate, async (req, res) => {
   const {
     place_id,
     schedule_id,
@@ -53,7 +57,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
   const { which_date, arrival_time, stay_time, transportation_way, order } =
     req.body;
@@ -80,7 +84,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", authenticate, async (req, res) => {
   const { id } = req.params;
   try {
     const deletedSchedulePlace = await prisma.schedule_places.delete({
