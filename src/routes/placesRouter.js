@@ -9,7 +9,8 @@ const router = express.Router();
 router.get("/search", searchPlaces);
 router.post("/directions", getRoute);
 router.post("/distances", calculateDistances);
-router.get("/", async (req, res) => {
+
+router.get('/', async (req, res) => {
   try {
     const rows = await prisma.places.findMany();
     res.json(rows);
@@ -18,10 +19,16 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get('/', async (req, res) => {
-  try {
-    const rows = await prisma.places.findMany();
-    res.json(rows);
+
+router.get('/:place_id', async (req, res) => {
+  try{
+    const place = await prisma.places.findUnique({
+      where: { place_id: req.params.place_id },
+    });
+    if (!place) {
+      return res.status(404).json({ error: '找不到景點' });
+    }
+    res.json(place);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

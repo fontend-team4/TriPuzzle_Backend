@@ -3,11 +3,9 @@ import jwt from "jsonwebtoken";
 import { prisma } from "../configs/db.js";
 import { config } from "../../config.js";
 
-// 註冊
+
 const register = async (req, res) => {
   const { name, email, password } = req.body;
-
-  // 檢查用戶是否已存在
   const existingUser = await prisma.users.findFirst({
     where: {
       OR: [{ email }, { name }],
@@ -37,7 +35,6 @@ const register = async (req, res) => {
   });
 };
 
-// 登入
 const login = async (req, res) => {
   const { identifier, password } = req.body;
 
@@ -54,7 +51,6 @@ const login = async (req, res) => {
       ? `886${identifier.slice(1)}`
       : identifier;
 
-  // 查找用戶
   const user = await prisma.users.findFirst({
     where: {
       OR: [
@@ -113,11 +109,12 @@ const login = async (req, res) => {
 //登出
 const logout = async (req, res) => {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ status: 401, message: "Token is required" });
   }
 
-  const token = authHeader.split(' ')[1];
+  const token = authHeader.split(" ")[1];
 
   // 先驗證 token 基本有效性
   let decoded;
@@ -164,7 +161,6 @@ const logout = async (req, res) => {
 const check = async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
-      // 若沒有使用者資訊，表示 token 不存在或無效
       return res.status(401).json({ message: "Invalid token or not logged in" });
     }
 
@@ -173,7 +169,6 @@ const check = async (req, res) => {
     });
 
     if (!user) {
-      // 若查不到該使用者，表示資料庫中無此紀錄
       return res.status(404).json({ message: "User not found" });
     }
 
@@ -185,11 +180,13 @@ const check = async (req, res) => {
         name: user.name,
         email: user.email,
         // 可視需要增加其他使用者資訊
-      }
+      },
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-export { register, login,logout,check };
+
+export { register, login, logout, check };
+

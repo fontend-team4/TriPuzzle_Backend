@@ -18,7 +18,6 @@ const authenticator = async (req, res, next) => {
     const blacklisted = await prisma.tokenblacklist.findUnique({
       where: { token },
     });
-    
     if (blacklisted) {
       return res.status(401).json({ status: 401, message: "此帳號已經登出" });
     }
@@ -35,6 +34,7 @@ const authenticator = async (req, res, next) => {
 
     // 若檢查通過，將解碼後的使用者資訊附加到 req 上
     req.user = decoded;
+    req.params.id = decoded.id;
     next();
   } catch (err) {
     return res.status(401).json({ status: 401, message: "無效的 Token" });
