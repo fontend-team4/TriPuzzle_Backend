@@ -18,6 +18,7 @@ const authenticator = async (req, res, next) => {
     const blacklisted = await prisma.tokenblacklist.findUnique({
       where: { token },
     });
+
     if (blacklisted) {
       return res.status(401).json({ status: 401, message: "此帳號已經登出" });
     }

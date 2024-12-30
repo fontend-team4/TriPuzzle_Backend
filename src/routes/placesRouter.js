@@ -20,6 +20,7 @@ router.get('/', async (req, res) => {
 });
 
 
+
 router.get('/:place_id', async (req, res) => {
   try{
     const place = await prisma.places.findUnique({

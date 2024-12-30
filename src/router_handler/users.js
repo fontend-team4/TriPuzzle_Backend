@@ -4,6 +4,7 @@ import { prisma } from "../configs/db.js";
 import { config } from "../../config.js";
 
 
+
 const register = async (req, res) => {
   const { name, email, password } = req.body;
   const existingUser = await prisma.users.findFirst({
@@ -109,7 +110,6 @@ const login = async (req, res) => {
 //登出
 const logout = async (req, res) => {
   const authHeader = req.headers.authorization;
-
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ status: 401, message: "Token is required" });
   }
@@ -186,6 +186,7 @@ const check = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 export { register, login, logout, check };

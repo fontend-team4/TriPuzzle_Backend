@@ -13,14 +13,13 @@ import { router as profileRouter } from "./src/routes/profile.js";
 import { router as placesRouter } from "./src/routes/placesRouter.js";
 import { router as favoritesRouter } from "./src/routes/favorites.js";
 import { router as schedulePlaceRouter } from "./src/routes/schedulePlaces.js";
-import { router as usersSchedulesRouter } from "./src/routes/usersSchedules.js";
 
 import { router as uploadRouter } from "./src/routes/upload.js";
 import { config } from "./config.js";
 
 const app = express();
 dotenv.config();
-const HOST_URL = process.env.HOST_URL;
+const HOST_URL = process.env.HOST_URL || "http://localhost:5173";
 
 app.use(
   session({
@@ -29,6 +28,46 @@ app.use(
     saveUninitialized: true,
   })
 );
+
+app.use(
+  cors({
+    origin: HOST_URL,
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+  })
+);
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
+app.use(express.json());
+app.use(passport.initialize());
+app.use(express.urlencoded({ extended: false }));
+app.use(passport.session());
+
+app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/users", usersRouter);
+app.use("/users", profileRouter);
+app.use("/api/upload", uploadRouter);
+
+app.get("/", (req, res) => {
+  res.send("Welcome to the API!");
+});
+
+app.use(express.urlencoded({ extended: false }));
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "your_secret_key",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
 
 app.use(
   cors({
@@ -99,6 +138,7 @@ app.use((err, req, res, next) => {
       message: `Validation error: ${errors}`,
     });
   }
+
 
   // JWT 身分認證錯誤處理
   if (err.name === "UnauthorizedError") {

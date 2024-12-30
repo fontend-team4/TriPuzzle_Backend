@@ -80,10 +80,10 @@ model schedule_places {
   schedule_id        Int
   which_date         DateTime          @db.Date
   arrival_time       DateTime?         @default(dbgenerated("'08:00:00'")) @db.Time(0)
-  stay_time          DateTime          @default(dbgenerated("'01:00:00'")) @db.Time(0)
+  stay_time          DateTime?         @default(dbgenerated("'01:00:00'")) @db.Time(0)
   transportation_way TransportationWay @default(PUBLIC_TRANSPORT)
-  order              String            @db.VarChar(45)
-  places             places            @relation(fields: [place_id], references: [place_id], onUpdate: Restrict, map: "schedule_place_id") // 修改 references 為 place_id
+  order              Int               @default(0)
+  places             places            @relation(fields: [place_id], references: [place_id], onUpdate: Restrict, map: "schedule_place_id")
   schedules          schedules         @relation(fields: [schedule_id], references: [id], onUpdate: Restrict, map: "schedule_schedule_id")
 
   @@index([place_id], map: "schedule_place_id_idx")
@@ -108,8 +108,6 @@ model schedules {
   users_schedules    users_schedules[]
   share_token        String?           @unique @db.VarChar(225)
   total_users        Int               @default(1)
-
-  
 }
 
 model users {
@@ -179,6 +177,7 @@ model tokenblacklist {
   token     String   @unique(map: "tokenBlacklist_token_key")
   createdAt DateTime @default(now())
 }
+
 
 
 enum TransportationWay {
