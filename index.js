@@ -13,6 +13,8 @@ import { router as profileRouter } from "./src/routes/profile.js";
 import { router as placesRouter } from "./src/routes/placesRouter.js";
 import { router as favoritesRouter } from "./src/routes/favorites.js";
 import { router as schedulePlaceRouter } from "./src/routes/schedulePlaces.js";
+import { router as usersSchedulesRouter } from "./src/routes/usersSchedules.js";
+
 import { router as uploadRouter } from "./src/routes/upload.js";
 import { config } from "./config.js";
 
@@ -34,12 +36,7 @@ app.use(
     methods: ["GET", "POST", "PATCH", "DELETE"],
   })
 );
-// app.use((req, res, next) => {
-//   res.setHeader("Access-Control-Allow-Origin", "*");
-//   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-//   next();
-// });
+
 app.use(express.json());
 app.use(passport.initialize());
 app.use(express.urlencoded({ extended: false }));
@@ -50,8 +47,11 @@ app.use("/api/auth", authRoutes);
 app.use("/users", usersRouter);
 app.use("/users", profileRouter);
 app.use("/api/upload", uploadRouter);
-
-
+app.use("/places", placesRouter);
+app.use("/schedules", schedulesRouter);
+app.use("/favorites", favoritesRouter);
+app.use("/schedulePlaces", schedulePlaceRouter);
+app.use("/usersSchedules", usersSchedulesRouter);
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");
 });
@@ -89,11 +89,6 @@ app.use(
 );
 
 
-app.use("/users", usersRouter);
-app.use("/places", placesRouter);
-app.use("/schedules", schedulesRouter); 
-app.use("/schedulePlaces", schedulePlaceRouter);
-app.use("/favorites", favoritesRouter);
 // 全局錯誤處理中間件
 app.use((err, req, res, next) => {
   // Zod 驗證錯誤處理

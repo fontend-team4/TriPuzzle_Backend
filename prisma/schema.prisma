@@ -106,6 +106,8 @@ model schedules {
   users_bills        users_bills[]
   users_images       users_images[]
   users_schedules    users_schedules[]
+  share_token        String?           @unique @db.VarChar(225)
+  total_users        Int               @default(1)
 }
 
 model users {
@@ -156,24 +158,31 @@ model users_images {
   @@index([users_id], map: "image_user_id_idx")
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+
 model users_schedules {
   schedule_id Int
   user_id     Int
   access      Boolean   @default(true)
-  schedules   schedules @relation(fields: [schedule_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "schedules_schedule_id")
-  users       users     @relation(fields: [user_id], references: [id], onUpdate: Restrict, map: "schedules_user_id")
+  schedules   schedules @relation(fields: [schedule_id], references: [id], onDelete: Cascade)
+  users       users     @relation(fields: [user_id], references: [id])
+
+  @@id([schedule_id, user_id])
+  @@index([schedule_id])
+  @@index([user_id])
+}
+
+
+model tokenblacklist {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique(map: "tokenBlacklist_token_key")
+  createdAt DateTime @default(now())
+
 
   @@id([schedule_id, user_id])
   @@index([schedule_id], map: "fk_schedules_id_idx")
   @@index([user_id], map: "fk_user_id_idx")
 }
 
-model tokenblacklist {
-  id        Int      @id @default(autoincrement())
-  token     String   @unique(map: "tokenBlacklist_token_key")
-  createdAt DateTime @default(now())
-}
 
 enum TransportationWay {
   PUBLIC_TRANSPORT

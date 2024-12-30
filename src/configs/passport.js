@@ -1,10 +1,11 @@
-import passport from 'passport';
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { Strategy as LineStrategy } from 'passport-line';
-import { PrismaClient } from '@prisma/client';
-import dotenv from 'dotenv';
-import jwt from 'jsonwebtoken'
-import { config } from '../../config.js';
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Strategy as LineStrategy } from "passport-line";
+import { PrismaClient } from "@prisma/client";
+import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
+import { config } from "../../config.js";
+
 
 dotenv.config();
 
@@ -19,13 +20,16 @@ passport.use(
       scope: ["profile", "email"],
     },
     async (accessToken, refreshToken, profile, done) => {
+
       try {
         const email = profile.emails[0]?.value;
         if (!email) {
           return done(new Error("No email found in Google profile"), null);
         }
         let user = await prisma.users.findUnique({ where: { email } });
+
         if (!user) {
+
           user = await prisma.users.create({
             data: {
               email,
@@ -36,6 +40,7 @@ passport.use(
             },
           });
         }
+
         if (!user || !user.id) {
           return done(new Error("User or ID is invalid"), null);
         }
@@ -48,7 +53,6 @@ passport.use(
           data: { token },
         });
         return done(null, updatedUser);
-
       } catch (err) {
         return done(err, null);
       }
@@ -74,7 +78,7 @@ passport.use(
             data: {
               name: profile.displayName,
               profile_pic_url: profile.pictureUrl || null,
-              login_way: 'LINE',
+              login_way: "LINE",
             },
           });
           const tokenPayload = {
@@ -128,7 +132,7 @@ passport.deserializeUser(async (id, done) => {
     if (user) {
       done(null, user);
     } else {
-      done(new Error('User not found'), null);
+      done(new Error("User not found"), null);
     }
   } catch (err) {
     done(err, null);

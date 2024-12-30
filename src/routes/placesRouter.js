@@ -19,6 +19,7 @@ router.get('/', async (req, res) => {
   }
 });
 
+
 router.get('/:place_id', async (req, res) => {
   try{
     const place = await prisma.places.findUnique({
@@ -32,7 +33,6 @@ router.get('/:place_id', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 
 router.post('/', async (req, res) => {
