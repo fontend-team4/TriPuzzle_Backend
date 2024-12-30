@@ -6,6 +6,7 @@ import { verifyOwner } from "../middlewares/verifyOwner.js";
 const router = express.Router();
 
 router.get("/", authenticate, async (req, res) => {
+
   try {
     const schedulePlaces = await prisma.schedule_places.findMany({
       include: {
@@ -57,9 +58,8 @@ router.post("/", authenticate, async (req, res) => {
     arrival_time,
     stay_time,
     transportation_way,
-    order,
+    order
   } = req.body;
-
   try {
     //修改order邏輯
     await prisma.$transaction(async (prisma) => {
@@ -135,24 +135,10 @@ router.post("/", authenticate, async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const deletedSchedulePlace = await prisma.schedule_places.delete({
-      where: {
-        id: parseInt(id),
-      },
-    });
-    res.status(200).json({
-      message: "資料刪除成功",
-      deletedSchedulePlace,
-    });
-  } catch (err) {
-    res.status(500).json({
-      error: "刪除資料時發生錯誤",
-      details: err.message,
-    });
-  }
-});
+
+
+
+
 
 export { router };
+

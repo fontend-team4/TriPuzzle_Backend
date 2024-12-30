@@ -13,6 +13,7 @@ import { router as profileRouter } from "./src/routes/profile.js";
 import { router as placesRouter } from "./src/routes/placesRouter.js";
 import { router as favoritesRouter } from "./src/routes/favorites.js";
 import { router as schedulePlaceRouter } from "./src/routes/schedulePlaces.js";
+
 import { router as uploadRouter } from "./src/routes/upload.js";
 import { config } from "./config.js";
 
@@ -58,6 +59,45 @@ app.get("/", (req, res) => {
 app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "your_secret_key",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+
+app.use(
+  cors({
+    origin: HOST_URL,
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+  })
+);
+
+app.use(express.json());
+app.use(passport.initialize());
+app.use(express.urlencoded({ extended: false }));
+app.use(passport.session());
+
+app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/users", usersRouter);
+app.use("/users", profileRouter);
+app.use("/api/upload", uploadRouter);
+app.use("/places", placesRouter);
+app.use("/schedules", schedulesRouter);
+app.use("/favorites", favoritesRouter);
+app.use("/schedulePlaces", schedulePlaceRouter);
+app.use("/usersSchedules", usersSchedulesRouter);
+app.get("/", (req, res) => {
+  res.send("Welcome to the API!");
+});
+
+app.use(express.urlencoded({ extended: false }));
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "your_secret_key",
@@ -87,11 +127,7 @@ app.use(
   })
 );
 
-app.use("/users", usersRouter);
-app.use("/places", placesRouter);
-app.use("/schedules", schedulesRouter);
-app.use("/schedulePlaces", schedulePlaceRouter);
-app.use("/favorites", favoritesRouter);
+
 // 全局錯誤處理中間件
 app.use((err, req, res, next) => {
   // Zod 驗證錯誤處理
@@ -102,6 +138,7 @@ app.use((err, req, res, next) => {
       message: `Validation error: ${errors}`,
     });
   }
+
 
   // JWT 身分認證錯誤處理
   if (err.name === "UnauthorizedError") {

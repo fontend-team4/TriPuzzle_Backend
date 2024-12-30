@@ -20,6 +20,7 @@ router.get("/", authenticate, async (req, res) => {
           },
         },
       },
+
     });
 
     if (rows.length === 0) {
@@ -33,6 +34,7 @@ router.get("/", authenticate, async (req, res) => {
 });
 
 // 尋找單一行程（只能找到自己的，只是為了把每個schedule編號用）
+
 router.get("/:id", authenticate, verifyOwner("schedules"), async (req, res) => {
   try {
     const scheduleId = parseInt(req.params.id);
@@ -78,7 +80,9 @@ router.post("/", authenticate, async (req, res) => {
     const formattedStartDate = new Date(`${start_date}T00:00:00.000Z`);
     const formattedEndDate = new Date(`${end_date}T00:00:00.000Z`);
 
+
     const newSchedule = await prisma.schedules.create({
+
       data: {
         title,
         create_by: userId,
@@ -89,16 +93,9 @@ router.post("/", authenticate, async (req, res) => {
         start_date: formattedStartDate,
         end_date: formattedEndDate,
         transportation_way,
-        // schedule_places: {
-        //   create: places.map((placeId) => ({
-        //     place_id: placeId,
-        //     which_date: formattedStartDate,
-        //   })),
-        // },
       },
     });
-
-    res.status(201).json({ message: "成功建立新行程", newSchedule });
+    res.status(201).json({ message: "成功建立新行程" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
