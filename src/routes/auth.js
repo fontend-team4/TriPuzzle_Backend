@@ -3,6 +3,8 @@ import passport from 'passport';
 
 const router = express.Router();
 
+const HOST_URL = process.env.HOST_URL;
+
 router.get('/google', passport.authenticate('google', {
   scope: ['profile', 'email'],
 }));
@@ -16,7 +18,7 @@ router.get('/google/callback',
   (req, res) => {
     const token = req.user.token
     const userId = req.user.id
-    res.redirect(`http://localhost:5173/planner?token=${token}&userId=${userId}`);
+    res.redirect(`${HOST_URL}/planner?token=${token}&userId=${userId}`);
   }
 );
 
@@ -28,7 +30,7 @@ router.get('/line/callback',
   (req, res) => {
     const token = req.user.token
     const userId = req.user.id
-    res.redirect(`http://localhost:5173/planner?token=${token}&userId=${userId}`);
+    res.redirect(`${HOST_URL}/planner?token=${token}&userId=${userId}`);
   }
 );
 

@@ -1,10 +1,11 @@
-import passport from 'passport';
-import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { Strategy as LineStrategy } from 'passport-line';
-import { PrismaClient } from '@prisma/client';
-import dotenv from 'dotenv';
-import jwt from 'jsonwebtoken'
-import { config } from '../../config.js';
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Strategy as LineStrategy } from "passport-line";
+import { PrismaClient } from "@prisma/client";
+import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
+import { config } from "../../config.js";
+
 
 dotenv.config();
 
@@ -15,10 +16,12 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:3000/auth/google/callback",
+      callbackURL: process.env.GOOGLE_CALLBACK_URL,
       scope: ["profile", "email"],
     },
     async (accessToken, refreshToken, profile, done) => {
+
+
       try {
         const email = profile.emails[0]?.value;
         if (!email) {
@@ -48,7 +51,6 @@ passport.use(
           data: { token },
         });
         return done(null, updatedUser);
-
       } catch (err) {
         return done(err, null);
       }
@@ -61,7 +63,7 @@ passport.use(
     {
       channelID: process.env.LINE_CHANNEL_ID,
       channelSecret: process.env.LINE_CHANNEL_SECRET,
-      callbackURL: 'http://localhost:3000/api/auth/line/callback',
+      callbackURL: process.env.LINE_REDIRECT_URI,
       scope: ['profile', 'openid', 'email'],
     },
     async (accessToken, refreshToken, profile, done) => {
@@ -74,7 +76,7 @@ passport.use(
             data: {
               name: profile.displayName,
               profile_pic_url: profile.pictureUrl || null,
-              login_way: 'LINE',
+              login_way: "LINE",
             },
           });
           const tokenPayload = {
