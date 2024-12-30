@@ -13,6 +13,13 @@ router.get("/", authenticate, async (req, res) => {
 
     const rows = await prisma.schedules.findMany({
       where: { create_by: userId },
+      include: {
+        schedule_places: {
+          include: {
+            places: true,
+          },
+        },
+      },
     });
 
     if (rows.length === 0) {
@@ -26,8 +33,29 @@ router.get("/", authenticate, async (req, res) => {
 });
 
 // 尋找單一行程（只能找到自己的，只是為了把每個schedule編號用）
-router.get("/:id", authenticate, verifyOwner("schedules"), (req, res) => {
-  res.status(200).json(req.resource);
+router.get("/:id", authenticate, verifyOwner("schedules"), async (req, res) => {
+  try {
+    const scheduleId = parseInt(req.params.id);
+
+    const schedule = await prisma.schedules.findUnique({
+      where: { id: scheduleId },
+      include: {
+        schedule_places: {
+          include: {
+            places: true,
+          },
+        },
+      },
+    });
+
+    if (!schedule) {
+      return res.status(404).json({ message: "找不到該行程" });
+    }
+
+    res.status(200).json(schedule);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // 讓登入的用戶一自己的身份建立新行程
@@ -50,7 +78,7 @@ router.post("/", authenticate, async (req, res) => {
     const formattedStartDate = new Date(`${start_date}T00:00:00.000Z`);
     const formattedEndDate = new Date(`${end_date}T00:00:00.000Z`);
 
-    await prisma.schedules.create({
+    const newSchedule = await prisma.schedules.create({
       data: {
         title,
         create_by: userId,
@@ -61,10 +89,16 @@ router.post("/", authenticate, async (req, res) => {
         start_date: formattedStartDate,
         end_date: formattedEndDate,
         transportation_way,
+        // schedule_places: {
+        //   create: places.map((placeId) => ({
+        //     place_id: placeId,
+        //     which_date: formattedStartDate,
+        //   })),
+        // },
       },
     });
 
-    res.status(201).json({ message: "成功建立新行程" });
+    res.status(201).json({ message: "成功建立新行程", newSchedule });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -84,6 +118,7 @@ router.patch(
         start_date,
         end_date,
         transportation_way,
+        places,
       } = req.body;
 
       const formattedStartDate = start_date
@@ -105,7 +140,41 @@ router.patch(
           ...(transportation_way && { transportation_way }),
         },
       });
-
+      // 如果傳入 `places`，則更新 schedule_places 資料
+      if (places && places.length > 0) {
+        for (const place of places) {
+          await prisma.schedule_places.upsert({
+            where: {
+              schedule_id_place_id: {
+                schedule_id: req.resource.id,
+                place_id: place.place_id,
+              },
+            },
+            update: {
+              which_date: new Date(place.which_date),
+              arrival_time: place.arrival_time
+                ? new Date(place.arrival_time)
+                : null,
+              stay_time: place.stay_time ? new Date(place.stay_time) : null,
+              transportation_way:
+                place.transportation_way || "PUBLIC_TRANSPORT",
+              order: place.order,
+            },
+            create: {
+              schedule_id: req.resource.id,
+              place_id: place.place_id,
+              which_date: new Date(place.which_date),
+              arrival_time: place.arrival_time
+                ? new Date(place.arrival_time)
+                : null,
+              stay_time: place.stay_time ? new Date(place.stay_time) : null,
+              transportation_way:
+                place.transportation_way || "PUBLIC_TRANSPORT",
+              order: place.order,
+            },
+          });
+        }
+      }
       res.status(200).json({
         message: "行程更新成功",
         updatedSchedule,
