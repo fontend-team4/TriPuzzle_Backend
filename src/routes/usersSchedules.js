@@ -34,19 +34,17 @@ router.get("/", authenticate, async (req, res) => {
       include: { schedules: true },
     });
 
-
     const formattedCoEditSchedules = coEditSchedules.map((item) => ({
       ...item.schedules,
     }));
 
-
     res.json(formattedCoEditSchedules);
   } catch (error) {
-    res.status(500).json({error: error.message});
+    res.status(500).json({ error: error.message });
   }
 });
 
-// 取得即將加入的行程資訊 
+// 取得即將加入的行程資訊
 router.get("/join/:shareToken", authenticate, async (req, res) => {
   const { shareToken } = req.params;
   const userId = req.user.id;
@@ -59,13 +57,12 @@ router.get("/join/:shareToken", authenticate, async (req, res) => {
     });
 
     if (!schedule) {
+      console.error("No schedule found for ID:", scheduleId);
       return res.status(404).json({ error: "行程不存在" });
     }
 
-    if (schedule.creator_id === userId) {
-      return res
-        .status(400)
-        .json({ error: "行程主創者無法加入共編喔" });
+    if (String(schedule.create_by) === String(userId)) {
+      return res.status(400).json({ error: "行程主創者無法加入共編喔" });
     }
 
     const existingRelation = await prisma.users_schedules.findUnique({
@@ -78,23 +75,21 @@ router.get("/join/:shareToken", authenticate, async (req, res) => {
     });
 
     if (existingRelation) {
-      return res
-        .status(400)
-        .json({ error: "您已加入此共編" });
+      return res.status(400).json({ error: "您已加入此共編" });
     }
 
-    res.json({ schedule }); 
+    res.json({ schedule });
   } catch (error) {
     if (error.name === "TokenExpiredError") {
       res.status(401).json({ error: "登入憑證過期，請重新登入" });
     } else {
-      res.status(500).json({ error: error.message });
+      console.error("Unexpected error:", error);
+      res.status(500).json({ error: "伺服器錯誤，請稍後再試" });
     }
   }
 });
 
-
-// 加入行程 
+// 加入行程
 router.post("/join/:shareToken", authenticate, async (req, res) => {
   const { shareToken } = req.params;
   const userId = req.user.id;
@@ -110,13 +105,9 @@ router.post("/join/:shareToken", authenticate, async (req, res) => {
       return res.status(404).json({ error: "查無此行程" });
     }
 
-
-    if (schedule.creator_id === userId) {
-      return res
-        .status(400)
-        .json({ error: "行程主創者無法加入共編喔" });
+    if (schedule.create_by === userId) {
+      return res.status(400).json({ error: "行程主創者無法加入共編喔" });
     }
-
 
     const existingRelation = await prisma.users_schedules.findUnique({
       where: {
@@ -128,9 +119,7 @@ router.post("/join/:shareToken", authenticate, async (req, res) => {
     });
 
     if (existingRelation) {
-      return res
-        .status(400)
-        .json({ error: "您已加入此行程" });
+      return res.status(400).json({ error: "您已加入此行程" });
     }
 
     // 建立新的關聯
@@ -138,7 +127,7 @@ router.post("/join/:shareToken", authenticate, async (req, res) => {
       data: {
         schedule_id: schedule.id,
         user_id: userId,
-        access: true, 
+        access: true,
       },
     });
 
@@ -147,7 +136,7 @@ router.post("/join/:shareToken", authenticate, async (req, res) => {
       where: { id: scheduleId },
       data: {
         total_users: {
-          increment: 1, 
+          increment: 1,
         },
       },
     });
@@ -157,7 +146,6 @@ router.post("/join/:shareToken", authenticate, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 
 // 查詢行程的所有使用者（建立者和共編者）
 router.get("/:id/users", authenticate, async (req, res) => {
@@ -187,7 +175,7 @@ router.get("/:id/users", authenticate, async (req, res) => {
         id: true,
         name: true,
         email: true,
-        profile_pic_url: true, 
+        profile_pic_url: true,
       },
     });
 
@@ -199,7 +187,7 @@ router.get("/:id/users", authenticate, async (req, res) => {
             id: true,
             name: true,
             email: true,
-            profile_pic_url: true, 
+            profile_pic_url: true,
           },
         },
       },
@@ -229,7 +217,7 @@ router.get("/:id/users", authenticate, async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    res.status(500).json({error: error.message});
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -238,7 +226,6 @@ router.post("/share/:scheduleId", authenticate, async (req, res) => {
   const { scheduleId } = req.params;
 
   try {
-    
     const schedule = await prisma.schedules.findUnique({
       where: { id: Number(scheduleId) },
     });
@@ -246,16 +233,13 @@ router.post("/share/:scheduleId", authenticate, async (req, res) => {
       return res.status(404).json({ error: "行程不存在" });
     }
 
-    
     const shareToken = generateShareToken(schedule.id);
 
-    
     await prisma.schedules.update({
       where: { id: schedule.id },
       data: { share_token: shareToken },
     });
 
-    
     const shareUrl = `${HOST_URL}/planner/join/${shareToken}`;
     res.json({ shareUrl });
   } catch (error) {
@@ -266,13 +250,12 @@ router.post("/share/:scheduleId", authenticate, async (req, res) => {
 // 退出共編
 router.delete("/:scheduleId", authenticate, async (req, res) => {
   try {
-    const scheduleId = parseInt(req.params.scheduleId, 10); 
-    const userId = req.user.id; 
+    const scheduleId = parseInt(req.params.scheduleId, 10);
+    const userId = req.user.id;
 
     if (isNaN(scheduleId)) {
       return res.status(400).json({ message: "行程 ID 無效" });
     }
-
 
     const schedule = await prisma.schedules.findUnique({
       where: { id: scheduleId },
@@ -285,9 +268,7 @@ router.delete("/:scheduleId", authenticate, async (req, res) => {
     const isOwner = schedule.create_by === userId;
 
     if (isOwner) {
-      return res
-        .status(403)
-        .json({ message: "主創者無法退出共編" });
+      return res.status(403).json({ message: "主創者無法退出共編" });
     }
 
     const userSchedule = await prisma.users_schedules.findUnique({
@@ -300,13 +281,11 @@ router.delete("/:scheduleId", authenticate, async (req, res) => {
       return res.status(404).json({ message: "共編記錄不存在" });
     }
 
-
     await prisma.users_schedules.delete({
       where: {
         schedule_id_user_id: { schedule_id: scheduleId, user_id: userId },
       },
     });
-
 
     await prisma.schedules.update({
       where: { id: scheduleId },
@@ -326,14 +305,13 @@ router.delete("/:scheduleId", authenticate, async (req, res) => {
 // 踢出共編
 router.delete("/:scheduleId/:userId", authenticate, async (req, res) => {
   try {
-    const scheduleId = parseInt(req.params.scheduleId, 10); 
-    const targetUserId = parseInt(req.params.userId, 10); 
-    const userId = req.user.id; 
+    const scheduleId = parseInt(req.params.scheduleId, 10);
+    const targetUserId = parseInt(req.params.userId, 10);
+    const userId = req.user.id;
 
     if (isNaN(scheduleId) || isNaN(targetUserId)) {
       return res.status(400).json({ message: "行程 ID 或用戶 ID 無效" });
     }
-
 
     const schedule = await prisma.schedules.findUnique({
       where: { id: scheduleId },
@@ -377,6 +355,5 @@ router.delete("/:scheduleId/:userId", authenticate, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 
 export { router };
