@@ -20,7 +20,7 @@ router.get("/", authenticate, async (req, res) => {
 });
 
 // 獲取特定日期的景點
-router.get("/byDate/:scheduleId/:date", async (req, res) => {
+router.get("/byDate/:scheduleId/:date", authenticate, async (req, res) => {
   const { scheduleId, date } = req.params;
 
   try {
@@ -31,9 +31,10 @@ router.get("/byDate/:scheduleId/:date", async (req, res) => {
       },
       include: {
         places: true,
+        schedules: true,
       },
       orderBy: {
-        position: "asc",
+        order: "asc",
       },
     });
 
@@ -47,7 +48,7 @@ router.get("/byDate/:scheduleId/:date", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", authenticate, async (req, res) => {
   const {
     id,
     place_id,
@@ -57,33 +58,30 @@ router.post("/", async (req, res) => {
     stay_time,
     transportation_way,
     order,
-    position,
   } = req.body;
 
   try {
-    // 開啟事務處理
+    //修改order邏輯
     await prisma.$transaction(async (prisma) => {
-      // 1. 獲取該日期的所有景點
       const existingPlaces = await prisma.schedule_places.findMany({
         where: {
           schedule_id,
           which_date: new Date(which_date),
         },
         orderBy: {
-          position: "asc",
+          order: "asc",
         },
       });
-      // 2. 更新受影響景點的 position
+      // 更新受影響景點的 order--只在新增時調整其他景點的位置
       if (!id) {
-        // 只在新增時調整其他景點的位置
         await Promise.all(
           existingPlaces
-            .filter((place) => place.position >= position)
+            .filter((place) => place.order >= order)
             .map((place) =>
               prisma.schedule_places.update({
                 where: { id: place.id },
                 data: {
-                  position: {
+                  order: {
                     increment: 1,
                   },
                 },
@@ -105,8 +103,7 @@ router.post("/", async (req, res) => {
           }),
           ...(stay_time && { stay_time: new Date(`1970-01-01T${stay_time}Z`) }),
           ...(transportation_way && { transportation_way }),
-          ...(order && { order: order.toString() }),
-          ...(position !== undefined && { position }),
+          ...(order !== undefined && { order }),
         },
         create: {
           place_id,
@@ -117,8 +114,7 @@ router.post("/", async (req, res) => {
             : null,
           stay_time: stay_time ? new Date(`1970-01-01T${stay_time}Z`) : null,
           transportation_way: transportation_way || "Customize",
-          order: order?.toString() || Date.now().toString(),
-          position: position || 0,
+          order: order || 0,
         },
         include: {
           places: true,
