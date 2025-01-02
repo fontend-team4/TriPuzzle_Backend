@@ -21,12 +21,13 @@ export const getDirections = async (origin, destination) => {
 };
 
 // Distance Matrix API
-export const getDistanceMatrix = async (origins, destinations) => {
+export const getDistanceMatrix = async (origins, destinations, mode) => {
   try {
     const response = await client.distancematrix({
       params: {
         origins,
         destinations,
+        mode,
         key: apiKey,
         language: "zh-TW",
       },
