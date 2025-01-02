@@ -125,10 +125,7 @@ export const getPlacesInfo = async (placeId) => {
       rating: details.rating,
       website: details.website || "N/A",
       opening_hours: details.opening_hours?.weekday_text || [],
-      photos:
-        details.photos.map((photo) => ({
-          photo_reference: photo.photo_reference,
-        })) || [],
+      photos: details.photos[0].photo_reference || "N/A",
       placeUrl: details.url,
       summary: details.editorial_summary || "N/A",
     };
