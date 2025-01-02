@@ -14,6 +14,8 @@ model bills {
   price       Decimal       @db.Decimal(10, 2)
   create_at   DateTime?     @default(now()) @db.Timestamp(0)
   category    String        @db.VarChar(45)
+  schedule_id Int
+  schedules   schedules     @relation(fields: [schedule_id], references: [id])
   users_bills users_bills[]
 }
 
@@ -108,6 +110,7 @@ model schedules {
   users_schedules    users_schedules[]
   share_token        String?           @unique @db.VarChar(225)
   total_users        Int               @default(1)
+  bills              bills[]
 }
 
 model users {
@@ -158,7 +161,6 @@ model users_images {
   @@index([users_id], map: "image_user_id_idx")
 }
 
-
 model users_schedules {
   schedule_id Int
   user_id     Int
@@ -171,14 +173,11 @@ model users_schedules {
   @@index([user_id])
 }
 
-
 model tokenblacklist {
   id        Int      @id @default(autoincrement())
   token     String   @unique(map: "tokenBlacklist_token_key")
   createdAt DateTime @default(now())
 }
-
-
 
 enum TransportationWay {
   PUBLIC_TRANSPORT

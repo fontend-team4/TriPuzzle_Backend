@@ -33,7 +33,7 @@ router.post('/:groupId/bills', async (req, res) => {
       await prisma.users_bills.createMany({ data: usersBillsData });
     }
 
-    res.status(201).json({ message: '帳目創建成功', bill: newBill });
+    res.status(201).json({ message: '新增帳目成功', bill: newBill });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -55,7 +55,7 @@ router.put('/:groupId/bills/:billId', async (req, res) => {
       },
     });
 
-    res.status(200).json({ message: '帳目更新成功', bill: updatedBill });
+    res.status(200).json({ message: '更新帳目成功', bill: updatedBill });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -72,9 +72,9 @@ router.delete('/:groupId/bills/:billId', async (req, res) => {
     // 刪除帳目
     await prisma.bills.delete({ where: { id: parseInt(billId) } });
 
-    res.status(200).json({ message: '帳目刪除成功' });
+    res.status(200).json({ message: '刪除帳目成功' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: '該帳目已刪除' });
   }
 });
 
@@ -87,7 +87,16 @@ router.get('/:groupId/bills', async (req, res) => {
       where: { schedule_id: parseInt(groupId) },
       include: {
         users_bills: {
-          include: { users: true },
+          include: {
+            users: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                users_images: true, // 獲取圖片
+              },
+            },
+          },
         },
       },
     });
