@@ -15,6 +15,7 @@ import { router as favoritesRouter } from "./src/routes/favorites.js";
 import { router as schedulePlaceRouter } from "./src/routes/schedulePlaces.js";
 import { router as usersSchedulesRouter } from "./src/routes/usersSchedules.js";
 import { router as uploadRouter } from "./src/routes/upload.js";
+import { router as paymentRouter } from "./src/routes/payment.js";
 import { config } from "./config.js";
 
 const app = express();
@@ -51,6 +52,7 @@ app.use("/api/auth", authRoutes);
 app.use("/users", usersRouter);
 app.use("/users", profileRouter);
 app.use("/api/upload", uploadRouter);
+app.use("/api/payment", paymentRouter);
 app.use("/usersSchedules", usersSchedulesRouter);
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");
