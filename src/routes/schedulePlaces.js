@@ -44,7 +44,7 @@ router.delete("/:id", authenticate, async (req, res) => {
     });
   }
 });
-      
+
 // 獲取特定日期的景點
 router.get("/byDate/:scheduleId/:date", authenticate, async (req, res) => {
   const { scheduleId, date } = req.params;
@@ -83,7 +83,7 @@ router.post("/", authenticate, async (req, res) => {
     arrival_time,
     stay_time,
     transportation_way,
-    order
+    order,
   } = req.body;
   try {
     //修改order邏輯
@@ -150,15 +150,14 @@ router.post("/", authenticate, async (req, res) => {
       return upsertedSchedulePlace;
     });
 
-    res.status(200).json({ message: "操作成功" });
+    res.status(200).json({ message: "新增/更新景點成功" });
   } catch (err) {
     console.error("Error:", err);
     res.status(500).json({
-      error: "更新或新增資料時發生錯誤",
+      error: "新增或更新資料時發生錯誤",
       details: err.message,
     });
   }
 });
 
 export { router };
-

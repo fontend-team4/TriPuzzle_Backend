@@ -52,6 +52,11 @@ app.use("/users", usersRouter);
 app.use("/users", profileRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/usersSchedules", usersSchedulesRouter);
+app.use("/places", placesRouter);
+app.use("/schedules", schedulesRouter);
+app.use("/favorites", favoritesRouter);
+app.use("/schedulePlaces", schedulePlaceRouter);
+
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");
 });
@@ -80,32 +85,6 @@ app.use(passport.initialize());
 app.use(express.urlencoded({ extended: false }));
 app.use(passport.session());
 
-app.use("/auth", authRoutes);
-app.use("/api/auth", authRoutes);
-app.use("/users", usersRouter);
-app.use("/users", profileRouter);
-app.use("/api/upload", uploadRouter);
-app.use("/places", placesRouter);
-app.use("/schedules", schedulesRouter);
-app.use("/favorites", favoritesRouter);
-app.use("/schedulePlaces", schedulePlaceRouter);
-app.get("/", (req, res) => {
-  res.send("Welcome to the API!");
-});
-
-app.use(express.urlencoded({ extended: false }));
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "your_secret_key",
-    resave: false,
-    saveUninitialized: true,
-  })
-);
-
-console.log("JWT Secret Key:", config.jwtSecretKey);
-
 // 統一處理 res.error 錯誤處理函數
 app.use((req, res, next) => {
   res.errmessage = function (err, status = 400) {
@@ -131,7 +110,6 @@ app.use((err, req, res, next) => {
   if (err instanceof ZodError) {
     const errors = err.errors.map((e) => e.message).join(", ");
     return res.status(400).json({
-      status: 400,
       message: `Validation error: ${errors}`,
     });
   }
@@ -143,14 +121,12 @@ app.use((err, req, res, next) => {
         ? "Token 已過期，請重新登入"
         : `Authentication failed: ${err.message}`;
     return res.status(401).json({
-      status: 401,
       message,
     });
   }
 
   // 未知錯誤
   res.status(404).json({
-    status: 404,
     message: err instanceof Error ? err.message : String(err),
   });
 });
