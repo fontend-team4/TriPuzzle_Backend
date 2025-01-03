@@ -3,7 +3,6 @@ import { prisma } from "../configs/db.js";
 
 import { authenticator as authenticate } from "../middlewares/authenticator.js";
 
-import { verifyOwner } from "../middlewares/verifyOwner.js";
 
 const router = express.Router();
 
@@ -25,26 +24,22 @@ router.get("/", authenticate, async (req, res) => {
   }
 });
 
-router.delete("/:id", authenticate, async (req, res) => {
-  const { id } = req.params;
+router.delete("/:id", async (req, res) => {
   try {
-    const deletedSchedulePlace = await prisma.schedule_places.delete({
-      where: {
-        id: parseInt(id),
-      },
+    const id = parseInt(req.params.id, 10); // 確保 id 是數字
+    if (isNaN(id)) {
+      return res.status(400).json({ error: "Invalid ID" });
+    }
+
+    const deleted = await prisma.schedule_places.delete({
+      where: { id },
     });
-    res.status(200).json({
-      message: "資料刪除成功",
-      deletedSchedulePlace,
-    });
+    res.status(200).json({ message: "刪除成功", deleted });
   } catch (err) {
-    res.status(500).json({
-      error: "刪除資料時發生錯誤",
-      details: err.message,
-    });
+    res.status(500).json({ error: "刪除失敗", details: err.message });
   }
 });
-      
+
 // 獲取特定日期的景點
 router.get("/byDate/:scheduleId/:date", authenticate, async (req, res) => {
   const { scheduleId, date } = req.params;
@@ -159,6 +154,8 @@ router.post("/", authenticate, async (req, res) => {
     });
   }
 });
+
+
 
 export { router };
 
