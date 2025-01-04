@@ -7,16 +7,49 @@ export const getRoute = async (req, res) => {
 };
 
 export const calculateDistances = async (req, res) => {
-  const { origins, destinations, mode } = req.body;
-  const results = await getDistanceMatrix(origins, destinations, mode);
-  const distances = results.map((row, place) => ({
-    origin: origins[place],
-    elements: row.elements.map((element, place) => ({
-      destination: destinations[place],
-      distance: element.distance?.value || "None",
-      duration: element.duration?.text || "None",
-    })),
-  }));
+  try {
+    const { origins, destinations, mode } = req.body;
+    if (
+      !origins ||
+      !destinations ||
+      !Array.isArray(origins) ||
+      !Array.isArray(destinations)
+    ) {
+      return res.status(400).json({
+        error: "無效的參數格式",
+        details: "需要提供 origins 和 destinations陣列",
+      });
+    }
+    // 檢查每個 place_id 的格式
+    if (
+      !origins.every((id) => id.startsWith("place_id:")) ||
+      !destinations.every((id) => id.startsWith("place_id:"))
+    ) {
+      return res.status(400).json({
+        error: "無效的 place_id 格式",
+        details: '每個 place_id 必須以 "place_id:" 開頭',
+      });
+    }
+    console.log("處理距離計算請求:", { origins, destinations, mode }); // 添加請求日誌
 
-  res.json(distances);
+    const results = await getDistanceMatrix(origins, destinations, mode);
+    const distances = results.map((row, originIndex) => ({
+      origin: origins[originIndex],
+      elements: row.elements.map((element, destIndex) => ({
+        destination: destinations[destIndex],
+        distance: element.distance?.value || null,
+        duration: element.duration?.text || null,
+      })),
+    }));
+    console.log("計算結果:", distances); // 添加結果日誌
+    res.json(distances);
+  } catch (error) {
+    console.error("距離計算錯誤:", error);
+
+    // 發送格式化的錯誤響應
+    res.status(500).json({
+      error: "距離計算失敗",
+      details: error.message,
+    });
+  }
 };
