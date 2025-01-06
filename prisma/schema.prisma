@@ -14,7 +14,15 @@ model bills {
   price       Decimal       @db.Decimal(10, 2)
   create_at   DateTime?     @default(now()) @db.Timestamp(0)
   category    String        @db.VarChar(45)
+  schedule_id Int
+  created_by  Int
+  is_personal Boolean       @default(false)
+  remarks     String?       @db.VarChar(255)
+  split_among Json
+  schedules   schedules     @relation(fields: [schedule_id], references: [id])
   users_bills users_bills[]
+
+  @@index([schedule_id], map: "bills_schedule_id_fkey")
 }
 
 model categories {
@@ -43,7 +51,6 @@ model places {
   image_url         String?             @db.VarChar(2048)
   country           String?             @default("Unknown") @db.VarChar(45)
   city              String?             @default("Unknown") @db.VarChar(45)
-  address           String?             @default("Unknown") @db.VarChar(255)
   phone             String?
   website           String?             @db.VarChar(225)
   rating            Decimal?            @default(0.0) @db.Decimal(2, 1)
@@ -53,12 +60,13 @@ model places {
   share_code        Bytes?              @db.Blob
   search_code       String?             @db.VarChar(255)
   place_id          String              @unique @db.VarChar(255)
-  geometry          Json
-  location          String?             @default("Unknown") @db.VarChar(255)
-  opening_hours     Json
   photos            Json
   photos_length     Int?                @default(0)
+  location          String?             @default("Unknown") @db.VarChar(255)
+  address           String?             @default("Unknown") @db.VarChar(255)
+  geometry          Json
   summary           String?             @db.VarChar(255)
+  opening_hours     Json
   token             String?
   favorites         favorites[]
   places_categories places_categories[]
@@ -94,9 +102,6 @@ model schedule_places {
   @@index([schedule_id], map: "schedule_schedule_id_idx")
 }
 
-
-
-
 model schedules {
   id                 Int               @id @default(autoincrement())
   title              String            @db.VarChar(45)
@@ -111,6 +116,7 @@ model schedules {
   created_at         DateTime?         @default(now()) @db.Timestamp(0)
   share_token        String?           @unique @db.VarChar(225)
   total_users        Int               @default(1)
+  bills              bills[]
   schedule_places    schedule_places[]
   users_bills        users_bills[]
   users_images       users_images[]

@@ -16,6 +16,7 @@ import { router as schedulePlaceRouter } from "./src/routes/schedulePlaces.js";
 import { router as usersSchedulesRouter } from "./src/routes/usersSchedules.js";
 import { router as uploadRouter } from "./src/routes/upload.js";
 import { router as paymentRouter } from "./src/routes/payment.js";
+import { router as groupRouter } from "./src/routes/groups.js";
 import { config } from "./config.js";
 
 const app = express();
@@ -62,6 +63,8 @@ app.use("/schedulePlaces", schedulePlaceRouter);
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");
 });
+app.use("/groups", groupRouter);
+
 
 app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
