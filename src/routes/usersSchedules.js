@@ -31,18 +31,30 @@ router.get("/", authenticate, async (req, res) => {
   try {
     const coEditSchedules = await prisma.users_schedules.findMany({
       where: { user_id: userId },
-      include: { schedules: true },
+      include: {
+        schedules: {
+          include: {
+            schedule_places: {
+              include: {
+                places: true, // 確保 schedule_places 中的 places 資訊也被包含
+              },
+            },
+          },
+        },
+      },
     });
 
+    // 格式化資料，僅返回 `schedules` 的內容
     const formattedCoEditSchedules = coEditSchedules.map((item) => ({
       ...item.schedules,
     }));
 
-    res.json(formattedCoEditSchedules);
+    res.status(200).json(formattedCoEditSchedules);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // 取得即將加入的行程資訊
 router.get("/join/:shareToken", authenticate, async (req, res) => {

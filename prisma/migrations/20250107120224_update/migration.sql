@@ -6,7 +6,13 @@ CREATE TABLE `bills` (
     `price` DECIMAL(10, 2) NOT NULL,
     `create_at` TIMESTAMP(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
     `category` VARCHAR(45) NOT NULL,
+    `schedule_id` INTEGER NOT NULL,
+    `created_by` INTEGER NOT NULL,
+    `is_personal` BOOLEAN NOT NULL DEFAULT false,
+    `remarks` VARCHAR(255) NULL,
+    `split_among` JSON NOT NULL,
 
+    INDEX `bills_schedule_id_fkey`(`schedule_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -20,10 +26,12 @@ CREATE TABLE `categories` (
 
 -- CreateTable
 CREATE TABLE `favorites` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `favorite_user` INTEGER NOT NULL,
     `favorite_places` VARCHAR(191) NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
 
+    INDEX `favorites_place_id_idx`(`favorite_places`),
+    INDEX `favorites_user_id_idx`(`favorite_user`),
     UNIQUE INDEX `favorites_favorite_user_favorite_places_key`(`favorite_user`, `favorite_places`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -31,27 +39,27 @@ CREATE TABLE `favorites` (
 -- CreateTable
 CREATE TABLE `places` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `place_id` VARCHAR(255) NOT NULL,
     `name` VARCHAR(255) NOT NULL,
     `name_en` VARCHAR(255) NULL,
-    `summary` VARCHAR(255) NULL,
     `image_url` VARCHAR(2048) NULL,
     `country` VARCHAR(45) NULL DEFAULT 'Unknown',
     `city` VARCHAR(45) NULL DEFAULT 'Unknown',
-    `address` VARCHAR(255) NULL DEFAULT 'Unknown',
-    `location` VARCHAR(255) NULL DEFAULT 'Unknown',
     `phone` VARCHAR(191) NULL,
     `website` VARCHAR(225) NULL,
     `rating` DECIMAL(2, 1) NULL DEFAULT 0.0,
-    `opening_hours` JSON NOT NULL,
-    `photos` JSON NOT NULL,
-    `photos_length` INTEGER NULL DEFAULT 0,
-    `geometry` JSON NOT NULL,
     `google_map_url` VARCHAR(511) NULL,
     `web_map` VARCHAR(255) NULL,
     `share_url` VARCHAR(255) NULL,
     `share_code` BLOB NULL,
     `search_code` VARCHAR(255) NULL,
+    `place_id` VARCHAR(255) NOT NULL,
+    `photos` JSON NOT NULL,
+    `photos_length` INTEGER NULL DEFAULT 0,
+    `location` VARCHAR(255) NULL DEFAULT 'Unknown',
+    `address` VARCHAR(255) NULL DEFAULT 'Unknown',
+    `geometry` JSON NOT NULL,
+    `summary` VARCHAR(255) NULL,
+    `opening_hours` JSON NOT NULL,
     `token` VARCHAR(191) NULL,
 
     UNIQUE INDEX `places_place_id_key`(`place_id`),
@@ -64,6 +72,8 @@ CREATE TABLE `places_categories` (
     `place_id` VARCHAR(191) NOT NULL,
     `category_id` INTEGER NOT NULL,
 
+    INDEX `categories_category_id_idx`(`category_id`),
+    INDEX `categories_places_id_idx`(`place_id`),
     UNIQUE INDEX `places_categories_place_id_category_id_key`(`place_id`, `category_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -76,7 +86,7 @@ CREATE TABLE `schedule_places` (
     `which_date` DATE NOT NULL,
     `arrival_time` TIME(0) NULL DEFAULT '08:00:00',
     `stay_time` TIME(0) NULL DEFAULT '01:00:00',
-    `duration` DATETIME(3) NULL,
+    `duration` TIME(0) NULL DEFAULT '00:00:00',
     `transportation_way` ENUM('PUBLIC_TRANSPORT', 'WALK', 'CAR', 'MOTORBIKE', 'CUSTOM') NOT NULL DEFAULT 'PUBLIC_TRANSPORT',
     `order` INTEGER NOT NULL DEFAULT 0,
 
@@ -120,6 +130,7 @@ CREATE TABLE `users` (
     `create_at` TIMESTAMP(0) NULL DEFAULT CURRENT_TIMESTAMP(0),
     `token` VARCHAR(511) NULL,
     `token_time` TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0),
+    `level` VARCHAR(45) NULL,
 
     UNIQUE INDEX `email_UNIQUE`(`email`),
     PRIMARY KEY (`id`)
@@ -174,6 +185,9 @@ CREATE TABLE `tokenblacklist` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
+ALTER TABLE `bills` ADD CONSTRAINT `bills_schedule_id_fkey` FOREIGN KEY (`schedule_id`) REFERENCES `schedules`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `favorites` ADD CONSTRAINT `favorites_favorite_places_fkey` FOREIGN KEY (`favorite_places`) REFERENCES `places`(`place_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -189,7 +203,7 @@ ALTER TABLE `places_categories` ADD CONSTRAINT `places_categories_place_id_fkey`
 ALTER TABLE `schedule_places` ADD CONSTRAINT `schedule_place_id` FOREIGN KEY (`place_id`) REFERENCES `places`(`place_id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 -- AddForeignKey
-ALTER TABLE `schedule_places` ADD CONSTRAINT `schedule_schedule_id` FOREIGN KEY (`schedule_id`) REFERENCES `schedules`(`id`) ON DELETE RESTRICT ON UPDATE RESTRICT;
+ALTER TABLE `schedule_places` ADD CONSTRAINT `schedule_schedule_id` FOREIGN KEY (`schedule_id`) REFERENCES `schedules`(`id`) ON DELETE CASCADE ON UPDATE RESTRICT;
 
 -- AddForeignKey
 ALTER TABLE `users_bills` ADD CONSTRAINT `bills_bill_id` FOREIGN KEY (`bill_id`) REFERENCES `bills`(`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
