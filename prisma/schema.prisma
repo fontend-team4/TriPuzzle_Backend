@@ -81,6 +81,7 @@ model schedule_places {
   which_date         DateTime          @db.Date
   arrival_time       DateTime?         @default(dbgenerated("'08:00:00'")) @db.Time(0)
   stay_time          DateTime?         @default(dbgenerated("'01:00:00'")) @db.Time(0)
+  duration           DateTime?         @default(dbgenerated("'00:00:00'")) @db.Time(0)
   transportation_way TransportationWay @default(PUBLIC_TRANSPORT)
   order              Int               @default(0)
   places             places            @relation(fields: [place_id], references: [place_id], onUpdate: Restrict, map: "schedule_place_id")

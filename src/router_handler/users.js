@@ -85,18 +85,7 @@ const login = async (req, res) => {
   });
 
   res.status(200).json({
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      profile_pic_url: user.profile_pic_url,
-      phone: user.phone,
-      gender: user.gender,
-      birthday: user.birthday,
-      description: user.description,
-      login_way: user.login_way,
-      create_at: user.create_at,
-    },
+    user,
     status: 200,
     message: "登入成功",
     token: `Bearer ${token}`,

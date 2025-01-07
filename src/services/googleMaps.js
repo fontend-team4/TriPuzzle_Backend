@@ -23,7 +23,7 @@ export const getDirections = async (origin, destination) => {
 // Distance Matrix API
 export const getDistanceMatrix = async (origins, destinations, mode) => {
   try {
-    console.log("Distance Matrix 請求參數:", { origins, destinations, mode }); // 添加請求日誌
+    // console.log("Distance Matrix 請求參數:", { origins, destinations, mode });
     const response = await client.distancematrix({
       params: {
         origins,

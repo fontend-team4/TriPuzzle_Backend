@@ -1,9 +1,8 @@
 import express from "express";
 import { prisma } from "../configs/db.js";
-
 import { authenticator as authenticate } from "../middlewares/authenticator.js";
-
 import { verifyOwner } from "../middlewares/verifyOwner.js";
+import { getDirections, getDistanceMatrix } from "../services/googleMaps.js";
 
 const router = express.Router();
 
@@ -44,7 +43,7 @@ router.delete("/:id", authenticate, async (req, res) => {
     });
   }
 });
-      
+
 // 獲取特定日期的景點
 router.get("/byDate/:scheduleId/:date", authenticate, async (req, res) => {
   const { scheduleId, date } = req.params;
@@ -83,7 +82,7 @@ router.post("/", authenticate, async (req, res) => {
     arrival_time,
     stay_time,
     transportation_way,
-    order
+    order,
   } = req.body;
   try {
     //修改order邏輯
@@ -92,6 +91,9 @@ router.post("/", authenticate, async (req, res) => {
         where: {
           schedule_id,
           which_date: new Date(which_date),
+        },
+        include: {
+          places: true,
         },
         orderBy: {
           order: "asc",
@@ -106,6 +108,7 @@ router.post("/", authenticate, async (req, res) => {
               prisma.schedule_places.update({
                 where: { id: place.id },
                 data: {
+                  arrival_time: null,
                   order: {
                     increment: 1,
                   },
@@ -113,6 +116,50 @@ router.post("/", authenticate, async (req, res) => {
               })
             )
         );
+      }
+
+      // 3. 計算新景點的交通時間
+      let formattedDuration = null;
+
+      if (order > 0) {
+        const prevPlace = existingPlaces[order - 1];
+        // console.log("計算交通時間的起點和終點:", {
+        //   from: prevPlace?.place_id,
+        //   to: place_id,
+        // });
+
+        const distanceMatrix = await getDistanceMatrix(
+          [`place_id:${prevPlace?.place_id}`],
+          [`place_id:${place_id}`],
+          transportation_way === "CAR" || transportation_way === "MOTOBIKE"
+            ? "driving"
+            : "walking"
+        );
+
+        // console.log(
+        //   "Distance Matrix response:",
+        //   JSON.stringify(distanceMatrix, null, 2)
+        // );
+
+        // 格式化時間的輔助函數
+        const formatTimeOnly = (seconds) => {
+          const hours = Math.floor(seconds / 3600);
+          const minutes = Math.floor((seconds % 3600) / 60);
+          const remainingSeconds = seconds % 60;
+
+          return `${hours.toString().padStart(2, "0")}:${minutes
+            .toString()
+            .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
+        };
+
+        if (distanceMatrix?.[0]?.elements[0]?.duration) {
+          const durationData = distanceMatrix[0].elements[0].duration;
+          // console.log("Raw duration value:", durationData);
+
+          const durationInSeconds = durationData.value;
+          formattedDuration = formatTimeOnly(durationInSeconds);
+          // console.log("Formatted duration:", formattedDuration);
+        }
       }
 
       const upsertedSchedulePlace = await prisma.schedule_places.upsert({
@@ -123,10 +170,12 @@ router.post("/", authenticate, async (req, res) => {
           ...(place_id && { place_id }),
           ...(schedule_id && { schedule_id }),
           ...(which_date && { which_date: new Date(which_date) }),
-          ...(arrival_time && {
-            arrival_time: new Date(`${which_date}T${arrival_time}Z`),
-          }),
+          arrival_time:
+            order === 0 ? new Date(`${which_date}T08:00:00Z`) : null,
           ...(stay_time && { stay_time: new Date(`1970-01-01T${stay_time}Z`) }),
+          ...(formattedDuration && {
+            duration: new Date(`1970-01-01T${formattedDuration}Z`),
+          }),
           ...(transportation_way && { transportation_way }),
           ...(order !== undefined && { order }),
         },
@@ -134,10 +183,14 @@ router.post("/", authenticate, async (req, res) => {
           place_id,
           schedule_id,
           which_date: new Date(which_date),
-          arrival_time: arrival_time
-            ? new Date(`${which_date}T${arrival_time}Z`)
-            : null,
-          stay_time: stay_time ? new Date(`1970-01-01T${stay_time}Z`) : null,
+          arrival_time:
+            order === 0 ? new Date(`${which_date}T08:00:00Z`) : null,
+          ...(stay_time && {
+            stay_time: new Date(`1970-01-01T${stay_time}Z`),
+          }),
+          ...(formattedDuration && {
+            duration: new Date(`1970-01-01T${formattedDuration}Z`),
+          }),
           transportation_way: transportation_way || "Customize",
           order: order || 0,
         },
@@ -161,4 +214,3 @@ router.post("/", authenticate, async (req, res) => {
 });
 
 export { router };
-

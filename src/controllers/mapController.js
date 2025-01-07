@@ -30,7 +30,7 @@ export const calculateDistances = async (req, res) => {
         details: '每個 place_id 必須以 "place_id:" 開頭',
       });
     }
-    console.log("處理距離計算請求:", { origins, destinations, mode }); // 添加請求日誌
+    // console.log("處理距離計算請求:", { origins, destinations, mode });
 
     const results = await getDistanceMatrix(origins, destinations, mode);
     const distances = results.map((row, originIndex) => ({
@@ -41,7 +41,7 @@ export const calculateDistances = async (req, res) => {
         duration: element.duration?.text || null,
       })),
     }));
-    console.log("計算結果:", distances); // 添加結果日誌
+    // console.log("計算結果:", distances);
     res.json(distances);
   } catch (error) {
     console.error("距離計算錯誤:", error);
