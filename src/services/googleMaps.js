@@ -16,7 +16,7 @@ export const getDirections = async (origin, destination) => {
     });
     return response.data.routes;
   } catch (error) {
-    throw new Error(`錯誤: ${error.response?.data || error.message}`);
+    return null;
   }
 };
 
@@ -70,7 +70,7 @@ export const getCoordinates = async (city) => {
     });
     return response.data.results[0].geometry.location;
   } catch (error) {
-    throw new Error(`錯誤: ${error.response?.data || error.message}`);
+    return null;
   }
 };
 
@@ -94,7 +94,7 @@ export const textSearchPlaces = async (query, location) => {
 
     return placesID;
   } catch (error) {
-    throw new Error(`錯誤: ${error.response?.data || error.message}`);
+    return null;
   }
 };
 
