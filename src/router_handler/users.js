@@ -5,7 +5,6 @@ import { config } from "../../config.js";
 
 const register = async (req, res) => {
   const { name, email, password } = req.body;
-
   const existingUser = await prisma.users.findFirst({
     where: {
       OR: [{ email }, { name }],
@@ -13,7 +12,6 @@ const register = async (req, res) => {
   });
   if (existingUser) {
     return res.status(409).json({
-      status: 409,
       message: "Email or Username is already registered",
     });
   }
@@ -29,7 +27,6 @@ const register = async (req, res) => {
   });
 
   res.status(201).json({
-    status: 201,
     message: "Registration successful",
     user: { id: newUser.id, name: newUser.name, email: newUser.email },
   });
@@ -40,7 +37,6 @@ const login = async (req, res) => {
 
   if (!identifier || !password) {
     return res.status(400).json({
-      status: 400,
       message: "Email、Username or Phonenumber and password are required",
     });
   }
@@ -162,7 +158,6 @@ const logout = async (req, res) => {
 const check = async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
-      // 若沒有使用者資訊，表示 token 不存在或無效
       return res
         .status(401)
         .json({ message: "Invalid token or not logged in" });
@@ -173,7 +168,6 @@ const check = async (req, res) => {
     });
 
     if (!user) {
-      // 若查不到該使用者，表示資料庫中無此紀錄
       return res.status(404).json({ message: "User not found" });
     }
 

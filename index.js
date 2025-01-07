@@ -13,12 +13,15 @@ import { router as profileRouter } from "./src/routes/profile.js";
 import { router as placesRouter } from "./src/routes/placesRouter.js";
 import { router as favoritesRouter } from "./src/routes/favorites.js";
 import { router as schedulePlaceRouter } from "./src/routes/schedulePlaces.js";
+import { router as usersSchedulesRouter } from "./src/routes/usersSchedules.js";
 import { router as uploadRouter } from "./src/routes/upload.js";
+import { router as paymentRouter } from "./src/routes/payment.js";
+import { router as groupRouter } from "./src/routes/groups.js";
 import { config } from "./config.js";
 
 const app = express();
 dotenv.config();
-const HOST_URL = process.env.HOST_URL;
+const HOST_URL = process.env.HOST_URL || "http://localhost:5173";
 
 app.use(
   session({
@@ -34,12 +37,12 @@ app.use(
     methods: ["GET", "POST", "PATCH", "DELETE"],
   })
 );
-// app.use((req, res, next) => {
-//   res.setHeader("Access-Control-Allow-Origin", "*");
-//   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-//   next();
-// });
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
 app.use(express.json());
 app.use(passport.initialize());
 app.use(express.urlencoded({ extended: false }));
@@ -50,15 +53,23 @@ app.use("/api/auth", authRoutes);
 app.use("/users", usersRouter);
 app.use("/users", profileRouter);
 app.use("/api/upload", uploadRouter);
-
+app.use("/api/payment", paymentRouter);
+app.use("/usersSchedules", usersSchedulesRouter);
+app.use("/places", placesRouter);
+app.use("/schedules", schedulesRouter);
+app.use("/favorites", favoritesRouter);
+app.use("/schedulePlaces", schedulePlaceRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the API!");
 });
+app.use("/groups", groupRouter);
+
 
 app.use(express.urlencoded({ extended: false }));
 app.use(passport.initialize());
 app.use(passport.session());
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "your_secret_key",
@@ -67,7 +78,17 @@ app.use(
   })
 );
 
-console.log("JWT Secret Key:", config.jwtSecretKey);
+app.use(
+  cors({
+    origin: HOST_URL,
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+  })
+);
+
+app.use(express.json());
+app.use(passport.initialize());
+app.use(express.urlencoded({ extended: false }));
+app.use(passport.session());
 
 // 統一處理 res.error 錯誤處理函數
 app.use((req, res, next) => {
@@ -88,19 +109,12 @@ app.use(
   })
 );
 
-
-app.use("/users", usersRouter);
-app.use("/places", placesRouter);
-app.use("/schedules", schedulesRouter); 
-app.use("/schedulePlaces", schedulePlaceRouter);
-app.use("/favorites", favoritesRouter);
 // 全局錯誤處理中間件
 app.use((err, req, res, next) => {
   // Zod 驗證錯誤處理
   if (err instanceof ZodError) {
     const errors = err.errors.map((e) => e.message).join(", ");
     return res.status(400).json({
-      status: 400,
       message: `Validation error: ${errors}`,
     });
   }
@@ -112,14 +126,12 @@ app.use((err, req, res, next) => {
         ? "Token 已過期，請重新登入"
         : `Authentication failed: ${err.message}`;
     return res.status(401).json({
-      status: 401,
       message,
     });
   }
 
   // 未知錯誤
   res.status(404).json({
-    status: 404,
     message: err instanceof Error ? err.message : String(err),
   });
 });

@@ -21,12 +21,13 @@ export const getDirections = async (origin, destination) => {
 };
 
 // Distance Matrix API
-export const getDistanceMatrix = async (origins, destinations) => {
+export const getDistanceMatrix = async (origins, destinations, mode) => {
   try {
     const response = await client.distancematrix({
       params: {
         origins,
         destinations,
+        mode,
         key: apiKey,
         language: "zh-TW",
       },
@@ -124,10 +125,7 @@ export const getPlacesInfo = async (placeId) => {
       rating: details.rating,
       website: details.website || "N/A",
       opening_hours: details.opening_hours?.weekday_text || [],
-      photos:
-        details.photos.map((photo) => ({
-          photo_reference: photo.photo_reference,
-        })) || [],
+      photos: details.photos[0].photo_reference || "N/A",
       placeUrl: details.url,
       summary: details.editorial_summary || "N/A",
     };
