@@ -6,7 +6,6 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { config } from "../../config.js";
 
-
 dotenv.config();
 
 const prisma = new PrismaClient();
@@ -20,8 +19,6 @@ passport.use(
       scope: ["profile", "email"],
     },
     async (accessToken, refreshToken, profile, done) => {
-
-
       try {
         const email = profile.emails[0]?.value;
         if (!email) {
@@ -44,7 +41,7 @@ passport.use(
         }
         const tokenPayload = { id: user.id, email: user.email };
         const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
-          expiresIn: "10h",
+          expiresIn: "24h",
         });
         const updatedUser = await prisma.users.update({
           where: { id: user.id },
@@ -64,7 +61,7 @@ passport.use(
       channelID: process.env.LINE_CHANNEL_ID,
       channelSecret: process.env.LINE_CHANNEL_SECRET,
       callbackURL: process.env.LINE_REDIRECT_URI,
-      scope: ['profile', 'openid', 'email'],
+      scope: ["profile", "openid", "email"],
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
@@ -83,8 +80,8 @@ passport.use(
             id: user.id,
             email: user.email,
           };
-            const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
-            expiresIn: "10h",
+          const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
+            expiresIn: "24h",
           });
           await prisma.users.update({
             where: { id: user.id },
@@ -97,15 +94,15 @@ passport.use(
               name: profile.displayName,
               profile_pic_url: profile.pictureUrl || null,
               password: "",
-              login_way: 'LINE',
+              login_way: "LINE",
             },
           });
           const tokenPayload = {
             id: user.id,
             email: user.email,
           };
-            const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
-            expiresIn: "10h",
+          const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
+            expiresIn: "24h",
           });
           await prisma.users.update({
             where: { id: user.id },
@@ -130,7 +127,7 @@ passport.deserializeUser(async (id, done) => {
     if (user) {
       done(null, user);
     } else {
-      done(new Error('User not found'), null);
+      done(new Error("User not found"), null);
     }
   } catch (err) {
     done(err, null);
