@@ -81,30 +81,30 @@ router.post('/:scheduleId/bills', authenticate, async (req, res) => {
 });
 
 
-// 3. 更新帳目 (PUT)
-router.put('/:scheduleId/bills/:billId', authenticate, async (req, res) => {
+// 3. 更新帳目 (PATCH)
+router.patch('/:scheduleId/bills/:billId', authenticate, async (req, res) => {
   const { billId, scheduleId } = req.params;
   const { title, price, category, date, created_by, split_among, is_personal, remarks } = req.body;
 
   try {
-    // 更新帳目基本資訊
+    // 組裝更新資料
+    const updatedData = {};
+    if (title !== undefined) updatedData.title = title;
+    if (price !== undefined) updatedData.price = parseFloat(price);
+    if (category !== undefined) updatedData.category = category;
+    if (date !== undefined) updatedData.date = new Date(date);
+    if (created_by !== undefined) updatedData.created_by = parseInt(created_by);
+    if (remarks !== undefined) updatedData.remarks = remarks;
+    if (is_personal !== undefined) updatedData.is_personal = is_personal;
+
     const updatedBill = await prisma.bills.update({
       where: { id: parseInt(billId) },
-      data: {
-        title,
-        price: parseFloat(price),
-        category,
-        date: new Date(date),
-        created_by: parseInt(created_by),
-        split_among: split_among || [],
-        is_personal: is_personal || false,
-        remarks: remarks || '',
-      },
+      data: updatedData,
     });
 
-    // 如果需要更新分攤人員
-    if (!is_personal && split_among) {
-      await prisma.users_bills.deleteMany({ where: { bill_id: parseInt(billId) } }); // 先刪除原有關聯
+    // 如果 `split_among` 需要更新，處理分攤人員
+    if (split_among !== undefined && !is_personal) {
+      await prisma.users_bills.deleteMany({ where: { bill_id: parseInt(billId) } }); // 刪除原關聯
       const usersBillsData = split_among.map((userId) => ({
         user_id: userId,
         bill_id: parseInt(billId),
@@ -114,11 +114,12 @@ router.put('/:scheduleId/bills/:billId', authenticate, async (req, res) => {
       await prisma.users_bills.createMany({ data: usersBillsData });
     }
 
-    res.status(200).json({ message: '更新帳目成功', bill: updatedBill });
+    res.status(200).json({ message: '帳目更新成功', bill: updatedBill });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 
 // 4. 刪除帳目 (DELETE)
