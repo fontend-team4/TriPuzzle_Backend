@@ -227,8 +227,12 @@ router.post("/", authenticate, async (req, res) => {
         },
       });
 
-      // 如果是新增景點，重新計算/更新後續景點的時間
-      if (!id && order < existingPlaces.length) {
+      // 如果新增/拖曳景點，重新計算/更新後續景點的時間
+      if (order < existingPlaces.length) {
+        // const needsTimeUpdate = id
+        //   ? existingPlaces.find((p) => p.id === id)?.order !== order // 如果是更新，檢查順序是否真的改變
+        //   : true; // 如果是新增，一定需要更新
+        // if (needsTimeUpdate) {
         const affectedPlaces = existingPlaces.filter(
           (place) => place.order >= order
         );
@@ -273,6 +277,7 @@ router.post("/", authenticate, async (req, res) => {
             lastPlace = updatePlace;
           }
         }
+        // }
       }
 
       return upsertedSchedulePlace;
