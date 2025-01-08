@@ -4,7 +4,6 @@ import { authenticator as authenticate } from "../middlewares/authenticator.js";
 import { verifyOwner } from "../middlewares/verifyOwner.js";
 import { getDirections, getDistanceMatrix } from "../services/googleMaps.js";
 
-
 const router = express.Router();
 
 router.get("/", authenticate, async (req, res) => {
@@ -27,7 +26,7 @@ router.get("/", authenticate, async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10); // 確保 id 是數字
+    const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
       return res.status(400).json({ error: "Invalid ID" });
     }
@@ -76,13 +75,12 @@ router.post("/", authenticate, async (req, res) => {
     place_id,
     schedule_id,
     which_date,
-    arrival_time,
     stay_time,
     transportation_way,
     order,
   } = req.body;
+
   try {
-    //修改order邏輯
     await prisma.$transaction(async (prisma) => {
       const existingPlaces = await prisma.schedule_places.findMany({
         where: {
@@ -96,7 +94,8 @@ router.post("/", authenticate, async (req, res) => {
           order: "asc",
         },
       });
-      // 更新受影響景點的 order--只在新增時調整其他景點的位置
+
+      // 更新受影響景點的順序(order)
       if (!id) {
         await Promise.all(
           existingPlaces
@@ -105,7 +104,6 @@ router.post("/", authenticate, async (req, res) => {
               prisma.schedule_places.update({
                 where: { id: place.id },
                 data: {
-                  arrival_time: null,
                   order: {
                     increment: 1,
                   },
@@ -114,17 +112,19 @@ router.post("/", authenticate, async (req, res) => {
             )
         );
       }
+      const formatTimeOnly = (seconds) => {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const remainingSeconds = seconds % 60;
 
-      // 3. 計算新景點的交通時間
+        return `${hours.toString().padStart(2, "0")}:${minutes
+          .toString()
+          .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
+      };
+
       let formattedDuration = null;
-
       if (order > 0) {
         const prevPlace = existingPlaces[order - 1];
-        // console.log("計算交通時間的起點和終點:", {
-        //   from: prevPlace?.place_id,
-        //   to: place_id,
-        // });
-
         const distanceMatrix = await getDistanceMatrix(
           [`place_id:${prevPlace?.place_id}`],
           [`place_id:${place_id}`],
@@ -133,69 +133,147 @@ router.post("/", authenticate, async (req, res) => {
             : "walking"
         );
 
-        // console.log(
-        //   "Distance Matrix response:",
-        //   JSON.stringify(distanceMatrix, null, 2)
-        // );
-
-        // 格式化時間的輔助函數
-        const formatTimeOnly = (seconds) => {
-          const hours = Math.floor(seconds / 3600);
-          const minutes = Math.floor((seconds % 3600) / 60);
-          const remainingSeconds = seconds % 60;
-
-          return `${hours.toString().padStart(2, "0")}:${minutes
-            .toString()
-            .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
-        };
-
         if (distanceMatrix?.[0]?.elements[0]?.duration) {
-          const durationData = distanceMatrix[0].elements[0].duration;
-          // console.log("Raw duration value:", durationData);
-
-          const durationInSeconds = durationData.value;
+          const durationInSeconds =
+            distanceMatrix[0].elements[0].duration.value;
           formattedDuration = formatTimeOnly(durationInSeconds);
-          // console.log("Formatted duration:", formattedDuration);
         }
       }
 
+      // 統一修正new Date成UTC格式
+      const calculateNewArrivalTime = (
+        prevArrivalTime,
+        prevStayTime,
+        formattedDuration
+      ) => {
+        const prevHours = prevArrivalTime.getUTCHours();
+        const prevMinutes = prevArrivalTime.getUTCMinutes();
+        const prevSeconds = prevArrivalTime.getUTCSeconds();
+
+        const stayHours = prevStayTime.getUTCHours();
+        const stayMinutes = prevStayTime.getUTCMinutes();
+        const staySeconds = prevStayTime.getUTCSeconds();
+
+        const [durationHours, durationMinutes, durationSeconds] =
+          formattedDuration
+            ? formattedDuration.split(":").map(Number)
+            : [0, 0, 0];
+
+        let totalSeconds = prevSeconds + staySeconds + durationSeconds;
+        let addMinutes = Math.floor(totalSeconds / 60);
+        totalSeconds = totalSeconds % 60;
+
+        let totalMinutes =
+          prevMinutes + stayMinutes + durationMinutes + addMinutes;
+        let addHours = Math.floor(totalMinutes / 60);
+        totalMinutes = totalMinutes % 60;
+
+        let totalHours = prevHours + stayHours + durationHours + addHours;
+
+        const newDate = new Date(prevArrivalTime);
+        newDate.setUTCHours(totalHours, totalMinutes, totalSeconds);
+
+        return newDate;
+      };
+
+      let newArrivalTime = null;
+      if (order === 0) {
+        newArrivalTime = new Date(`${which_date}T08:00:00Z`);
+      } else if (order > 0 && existingPlaces[order - 1]) {
+        const prevPlace = existingPlaces[order - 1];
+        newArrivalTime = calculateNewArrivalTime(
+          new Date(prevPlace.arrival_time),
+          new Date(prevPlace.stay_time),
+          formattedDuration
+        );
+      }
+
+      // upsert新增或更新景點
       const upsertedSchedulePlace = await prisma.schedule_places.upsert({
         where: {
           id: id ?? -1, // 使用 -1，確定 id 不存在時應直接進行 create
         },
         update: {
-          ...(place_id && { place_id }),
-          ...(schedule_id && { schedule_id }),
-          ...(which_date && { which_date: new Date(which_date) }),
-          arrival_time:
-            order === 0 ? new Date(`${which_date}T08:00:00Z`) : null,
-          ...(stay_time && { stay_time: new Date(`1970-01-01T${stay_time}Z`) }),
-          ...(formattedDuration && {
-            duration: new Date(`1970-01-01T${formattedDuration}Z`),
-          }),
-          ...(transportation_way && { transportation_way }),
-          ...(order !== undefined && { order }),
+          place_id,
+          schedule_id,
+          which_date: new Date(which_date),
+          arrival_time: newArrivalTime,
+          stay_time: stay_time
+            ? new Date(`1970-01-01T${stay_time}Z`)
+            : undefined,
+          duration: formattedDuration
+            ? new Date(`1970-01-01T${formattedDuration}Z`)
+            : null,
+          transportation_way,
+          order,
         },
         create: {
           place_id,
           schedule_id,
           which_date: new Date(which_date),
-          arrival_time:
-            order === 0 ? new Date(`${which_date}T08:00:00Z`) : null,
-          ...(stay_time && {
-            stay_time: new Date(`1970-01-01T${stay_time}Z`),
-          }),
-          ...(formattedDuration && {
-            duration: new Date(`1970-01-01T${formattedDuration}Z`),
-          }),
+          arrival_time: newArrivalTime,
+          stay_time: stay_time
+            ? new Date(`1970-01-01T${stay_time}Z`)
+            : undefined,
+          duration: formattedDuration
+            ? new Date(`1970-01-01T${formattedDuration}Z`)
+            : null,
           transportation_way: transportation_way || "Customize",
-          order: order || 0,
+          order,
         },
         include: {
           places: true,
           schedules: true,
         },
       });
+
+      // 如果是新增景點，重新計算/更新後續景點的時間
+      if (!id && order < existingPlaces.length) {
+        const affectedPlaces = existingPlaces.filter(
+          (place) => place.order >= order
+        );
+        let lastPlace = upsertedSchedulePlace;
+
+        for (let nextPlace of affectedPlaces) {
+          const newDistanceMatrix = await getDistanceMatrix(
+            [`place_id:${lastPlace.place_id}`],
+            [`place_id:${nextPlace.place_id}`],
+            transportation_way === "CAR" || transportation_way === "MOTOBIKE"
+              ? "driving"
+              : "walking"
+          );
+
+          if (newDistanceMatrix?.[0]?.elements[0]?.duration) {
+            const durationInSeconds =
+              newDistanceMatrix[0].elements[0].duration.value;
+            const newFormattedDuration = formatTimeOnly(durationInSeconds);
+
+            // 取得前一個景點的時間資訊
+            const lastArrivalTime = new Date(lastPlace.arrival_time);
+            const lastStayTime = new Date(lastPlace.stay_time);
+
+            // 計算新的到達時間（考慮前一個景點的到達時間、停留時間和交通時間）
+            const newArrivalTime = calculateNewArrivalTime(
+              lastArrivalTime,
+              lastStayTime,
+              newFormattedDuration
+            );
+
+            const updatePlace = await prisma.schedule_places.update({
+              where: { id: nextPlace.id },
+              data: {
+                arrival_time: newArrivalTime,
+                duration: new Date(`1970-01-01T${newFormattedDuration}Z`),
+              },
+              include: {
+                places: true,
+              },
+            });
+
+            lastPlace = updatePlace;
+          }
+        }
+      }
 
       return upsertedSchedulePlace;
     });
@@ -204,7 +282,7 @@ router.post("/", authenticate, async (req, res) => {
   } catch (err) {
     console.error("Error:", err);
     res.status(500).json({
-      error: "新增或更新資料時發生錯誤",
+      error: "更新或新增資料時發生錯誤",
       details: err.message,
     });
   }
