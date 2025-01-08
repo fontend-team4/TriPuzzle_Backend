@@ -133,6 +133,10 @@ app.use((err, req, res, next) => {
   });
 });
 
+app.get('*', (req, res) => {
+  res.redirect(301, 'https://www.tripuzzle.fun' + req.originalUrl);
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
