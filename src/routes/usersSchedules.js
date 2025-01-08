@@ -45,6 +45,7 @@ router.get("/", authenticate, async (req, res) => {
     });
 
     // 格式化資料，僅返回 `schedules` 的內容
+
     const formattedCoEditSchedules = coEditSchedules.map((item) => ({
       ...item.schedules,
     }));

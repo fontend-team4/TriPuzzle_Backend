@@ -4,6 +4,7 @@ import { authenticator as authenticate } from "../middlewares/authenticator.js";
 import { verifyOwner } from "../middlewares/verifyOwner.js";
 import { getDirections, getDistanceMatrix } from "../services/googleMaps.js";
 
+
 const router = express.Router();
 
 router.get("/", authenticate, async (req, res) => {
@@ -80,6 +81,7 @@ router.post("/", authenticate, async (req, res) => {
     order,
   } = req.body;
 
+
   try {
     await prisma.$transaction(async (prisma) => {
       const existingPlaces = await prisma.schedule_places.findMany({
@@ -90,10 +92,12 @@ router.post("/", authenticate, async (req, res) => {
         include: {
           places: true,
         },
+
         orderBy: {
           order: "asc",
         },
       });
+
 
       // 更新受影響景點的順序(order)
       if (!id) {
@@ -112,6 +116,7 @@ router.post("/", authenticate, async (req, res) => {
             )
         );
       }
+
       const formatTimeOnly = (seconds) => {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
@@ -189,6 +194,7 @@ router.post("/", authenticate, async (req, res) => {
       }
 
       // upsert新增或更新景點
+
       const upsertedSchedulePlace = await prisma.schedule_places.upsert({
         where: {
           id: id ?? -1, // 使用 -1，確定 id 不存在時應直接進行 create
@@ -226,6 +232,7 @@ router.post("/", authenticate, async (req, res) => {
           schedules: true,
         },
       });
+
 
       // 如果新增/拖曳景點，重新計算/更新後續景點的時間
       if (order < existingPlaces.length) {
@@ -280,6 +287,7 @@ router.post("/", authenticate, async (req, res) => {
         // }
       }
 
+
       return upsertedSchedulePlace;
     });
 
@@ -292,5 +300,6 @@ router.post("/", authenticate, async (req, res) => {
     });
   }
 });
+
 
 export { router };

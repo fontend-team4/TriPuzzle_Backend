@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import { config } from "../../config.js";
 
+
 dotenv.config();
 
 const prisma = new PrismaClient();
@@ -19,6 +20,8 @@ passport.use(
       scope: ["profile", "email"],
     },
     async (accessToken, refreshToken, profile, done) => {
+
+
       try {
         const email = profile.emails[0]?.value;
         if (!email) {
