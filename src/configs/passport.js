@@ -47,6 +47,7 @@ passport.use(
           where: { id: user.id },
           data: { token },
         });
+        console.log("updatedUser", updatedUser);
         return done(null, updatedUser);
       } catch (err) {
         return done(err, null);

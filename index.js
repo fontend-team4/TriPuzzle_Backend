@@ -21,8 +21,7 @@ import { config } from "./config.js";
 
 const app = express();
 dotenv.config();
-const HOST_URL = process.env.HOST_URL || "http://localhost:5173";
-
+const HOST_URL = process.env.HOST_URL;
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "your_secret_key",
