@@ -16,13 +16,14 @@ export const getDirections = async (origin, destination) => {
     });
     return response.data.routes;
   } catch (error) {
-    throw new Error(`錯誤: ${error.response?.data || error.message}`);
+    return null;
   }
 };
 
 // Distance Matrix API
 export const getDistanceMatrix = async (origins, destinations, mode) => {
   try {
+    // console.log("Distance Matrix 請求參數:", { origins, destinations, mode });
     const response = await client.distancematrix({
       params: {
         origins,
@@ -32,9 +33,28 @@ export const getDistanceMatrix = async (origins, destinations, mode) => {
         language: "zh-TW",
       },
     });
+    // 檢查 API 響應狀態
+    if (response.data.status !== "OK") {
+      throw new Error(`Google Maps API 返回狀態錯誤: ${response.data.status}`);
+    }
     return response.data.rows;
   } catch (error) {
-    throw new Error(`錯誤: ${error.response?.data || error.message}`);
+    // 更詳細的錯誤處理
+    console.error("Distance Matrix API 錯誤:", error);
+
+    if (error.response?.data?.error_message) {
+      // API 返回的錯誤
+      const errorMessage =
+        error.response.data.error_message ||
+        JSON.stringify(error.response.data);
+      throw new Error(`Google Maps API 響應錯誤: ${errorMessage}`);
+    } else if (error.request) {
+      // 請求未收到響應
+      throw new Error("無法連接到 Google Maps API");
+    } else {
+      // 其他錯誤
+      throw new Error(`Distance Matrix API 錯誤: ${error.message}`);
+    }
   }
 };
 
@@ -50,7 +70,7 @@ export const getCoordinates = async (city) => {
     });
     return response.data.results[0].geometry.location;
   } catch (error) {
-    throw new Error(`錯誤: ${error.response?.data || error.message}`);
+    return null;
   }
 };
 
@@ -74,12 +94,19 @@ export const textSearchPlaces = async (query, location) => {
 
     return placesID;
   } catch (error) {
-    throw new Error(`錯誤: ${error.response?.data || error.message}`);
+    return null;
   }
 };
 
 // Places API (Nearby Search)
 export const nearbySearchPlaces = async (type, location) => {
+  if (!type) {
+    throw new Error("地點類型 (type) 是必需的參數");
+  }
+  if (!location || !location.lat || !location.lng) {
+    throw new Error("位置資訊 (location) 格式不正確，需要包含 lat 和 lng");
+  }
+
   try {
     const response = await client.placesNearby({
       params: {
@@ -98,7 +125,18 @@ export const nearbySearchPlaces = async (type, location) => {
 
     return placesID;
   } catch (error) {
-    throw new Error(`錯誤: ${error.response?.data || error.message}`);
+    console.error("Nearby Search API 錯誤:", error);
+
+    if (error.response?.data?.error_message) {
+      const errorMessage =
+        error.response.data.error_message ||
+        JSON.stringify(error.response.data);
+      throw new Error(`Google Maps API 響應錯誤: ${errorMessage}`);
+    } else if (error.request) {
+      throw new Error("無法連接到 Google Maps API");
+    } else {
+      throw new Error(`Nearby Search API 錯誤: ${error.message}`);
+    }
   }
 };
 
@@ -130,6 +168,17 @@ export const getPlacesInfo = async (placeId) => {
       summary: details.editorial_summary || "N/A",
     };
   } catch (error) {
-    throw new Error(`錯誤: ${error.response?.data || error.message}`);
+    console.error("Place Details API 錯誤:", error);
+
+    if (error.response?.data?.error_message) {
+      const errorMessage =
+        error.response.data.error_message ||
+        JSON.stringify(error.response.data);
+      throw new Error(`Google Maps API 響應錯誤: ${errorMessage}`);
+    } else if (error.request) {
+      throw new Error("無法連接到 Google Maps API");
+    } else {
+      throw new Error(`Place Details API 錯誤: ${error.message}`);
+    }
   }
 };

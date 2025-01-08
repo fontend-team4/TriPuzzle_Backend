@@ -8,13 +8,9 @@ const prisma = new PrismaClient();
 // 1. 獲取指定行程的所有帳目 (GET)
 router.get('/:scheduleId/bills', authenticate, async (req, res) => {
   const { scheduleId } = req.params;
-  console.log('scheduleId', scheduleId);
-  console.log('Type of scheduleId:', typeof parseInt(scheduleId)); // 確認型別
-  console.log(scheduleId.value);
-
   try {
     const bills = await prisma.bills.findMany({
-      where: { schedule_id: scheduleId.value },
+      where: { schedule_id: parseInt(scheduleId) },
       include: {
         users_bills: {
           include: {
@@ -31,7 +27,6 @@ router.get('/:scheduleId/bills', authenticate, async (req, res) => {
       },
     });
 
-    console.log('bills:', bills); // 顯示所有帳目
     res.status(200).json(
       bills.map((bill) => ({
         ...bill,

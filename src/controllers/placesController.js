@@ -11,12 +11,13 @@ export const searchPlaces = async (req, res) => {
   let location;
   let placesID;
 
-  if (city) {
-    location = await getCoordinates(city);
-  }
-  if (latitude && longitude) {
-    location = { lat: parseFloat(latitude), lng: parseFloat(longitude) };
-  }
+  try {
+    if (city) {
+      location = await getCoordinates(city);
+    }
+    if (latitude && longitude) {
+      location = { lat: parseFloat(latitude), lng: parseFloat(longitude) };
+    }
 
   if (query) {
     placesID = await textSearchPlaces(query, location);
@@ -29,5 +30,8 @@ export const searchPlaces = async (req, res) => {
     placesID.map(async (place) => await getPlacesInfo(place.place_id))
   );
 
-  res.json(placesInfo);
+    res.json(placesInfo);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 };

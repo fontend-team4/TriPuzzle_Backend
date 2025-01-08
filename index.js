@@ -33,16 +33,13 @@ app.use(
 
 app.use(
   cors({
-    origin: HOST_URL,
+    origin: [HOST_URL, "http://localhost:5173", "http://127.0.0.1:5173"],
+    credentials: true, // 允許攜帶憑證(google api跨域需求)
     methods: ["GET", "POST", "PATCH", "DELETE"],
+    allowHeaders: ["Content-Type", "Authorization"],
   })
 );
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  next();
-});
+
 app.use(express.json());
 app.use(passport.initialize());
 app.use(express.urlencoded({ extended: false }));

@@ -12,7 +12,8 @@ const register = async (req, res) => {
   });
   if (existingUser) {
     return res.status(409).json({
-      message: "Email or Username is already registered",
+      status: 409,
+      message: "信箱或使用者暱稱已經被使用",
     });
   }
 
@@ -27,7 +28,8 @@ const register = async (req, res) => {
   });
 
   res.status(201).json({
-    message: "Registration successful",
+    status: 201,
+    message: "註冊成功",
     user: { id: newUser.id, name: newUser.name, email: newUser.email },
   });
 };
@@ -37,7 +39,8 @@ const login = async (req, res) => {
 
   if (!identifier || !password) {
     return res.status(400).json({
-      message: "Email、Username or Phonenumber and password are required",
+      status: 400,
+      message: "信箱、使用者暱稱或是電話為必填欄位",
     });
   }
 
@@ -57,16 +60,14 @@ const login = async (req, res) => {
     },
   });
   if (!user) {
-    return res.status(404).json({ status: 404, message: "User not found" });
+    return res.status(404).json({ status: 404, message: "找不到使用者" });
   }
 
   // 驗證密碼
   const isValidPassword = bcrypt.compareSync(password, user.password);
 
   if (!isValidPassword) {
-    return res
-      .status(401)
-      .json({ status: 401, message: "Invalid credentials" });
+    return res.status(401).json({ status: 401, message: "輸入密碼錯誤" });
   }
   // 生成 JWT
   const tokenPayload = {
@@ -74,7 +75,7 @@ const login = async (req, res) => {
     email: user.email,
   };
   const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
-    expiresIn: "10h",
+    expiresIn: "24h",
   });
 
   // 存儲 token 到資料庫
@@ -84,20 +85,9 @@ const login = async (req, res) => {
   });
 
   res.status(200).json({
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      profile_pic_url: user.profile_pic_url,
-      phone: user.phone,
-      gender: user.gender,
-      birthday: user.birthday,
-      description: user.description,
-      login_way: user.login_way,
-      create_at: user.create_at,
-    },
+    user,
     status: 200,
-    message: "Login successful",
+    message: "登入成功",
     token: `Bearer ${token}`,
   });
 };
@@ -106,7 +96,7 @@ const login = async (req, res) => {
 const logout = async (req, res) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ status: 401, message: "Token is required" });
+    return res.status(401).json({ status: 401, message: "無法讀取Token" });
   }
 
   const token = authHeader.split(" ")[1];
@@ -119,7 +109,7 @@ const logout = async (req, res) => {
     console.error(error);
     return res
       .status(401)
-      .json({ status: 401, message: "Invalid or expired token" });
+      .json({ status: 401, message: "Token已過期，請重新登入" });
   }
 
   // 檢查 token 是否在黑名單
@@ -128,7 +118,7 @@ const logout = async (req, res) => {
   });
 
   if (isBlacklisted) {
-    return res.status(401).json({ message: "Token has been logged out" });
+    return res.status(401).json({ message: "請重新登入" });
   }
 
   // 查詢使用者並檢查 token 一致性
@@ -137,7 +127,7 @@ const logout = async (req, res) => {
   });
 
   if (!user || user.token !== token) {
-    return res.status(401).json({ status: 401, message: "Invalid token" });
+    return res.status(401).json({ status: 401, message: "無效的Token" });
   }
 
   // 更新使用者資料庫紀錄，清除 token
@@ -151,16 +141,14 @@ const logout = async (req, res) => {
     data: { token },
   });
 
-  res.status(200).json({ status: 200, message: "Logout successful" });
+  res.status(200).json({ status: 200, message: "登入成功" });
 };
 
 //檢查登入狀態
 const check = async (req, res) => {
   try {
     if (!req.user || !req.user.id) {
-      return res
-        .status(401)
-        .json({ message: "Invalid token or not logged in" });
+      return res.status(401).json({ message: "無效的Token或是未登入" });
     }
 
     const user = await prisma.users.findUnique({
@@ -168,7 +156,7 @@ const check = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "找不到使用者" });
     }
 
     // 若使用者存在，則證明 token 有效，表示目前處於登入狀態
