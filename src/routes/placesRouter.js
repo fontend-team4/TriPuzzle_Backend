@@ -37,13 +37,18 @@ router.get('/:place_id', async (req, res) => {
 
 
 router.post('/', async (req, res) => {
-  const { place_id, name, address } = req.body;
+  const { place_id, name, address, rating } = req.body;
   if (!place_id || !name || !address) {
     return res.status(400).json({ error: '缺少必要的字段' });
   }
-  const placeData = req.body;
+  
+  
+  const placeData = {
+    ...req.body,
+    rating: rating === "" ? null : rating, 
+  };
+
   try {
-    // 使用 upsert，避免place_id重複
     const place = await prisma.places.upsert({
       where: { place_id: placeData.place_id },
       update: placeData,
