@@ -26,7 +26,7 @@ router.get("/", authenticate, async (req, res) => {
 
 router.delete("/:id", async (req, res) => {
   try {
-    const id = parseInt(req.params.id, 10); // 確保 id 是數字
+    const id = parseInt(req.params.id, 10);
     if (isNaN(id)) {
       return res.status(400).json({ error: "Invalid ID" });
     }
@@ -82,7 +82,6 @@ router.post("/", authenticate, async (req, res) => {
 
   try {
     await prisma.$transaction(async (prisma) => {
-      // 1. 取得現有景點
       const existingPlaces = await prisma.schedule_places.findMany({
         where: {
           schedule_id,
@@ -96,7 +95,7 @@ router.post("/", authenticate, async (req, res) => {
         },
       });
 
-      // 2. 更新受影響景點的順序
+      // 更新受影響景點的順序(order)
       if (!id) {
         await Promise.all(
           existingPlaces
@@ -123,7 +122,6 @@ router.post("/", authenticate, async (req, res) => {
           .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
       };
 
-      // 3. 計算新景點的 duration
       let formattedDuration = null;
       if (order > 0) {
         const prevPlace = existingPlaces[order - 1];
@@ -142,21 +140,20 @@ router.post("/", authenticate, async (req, res) => {
         }
       }
 
-      // 計算新的到達時間
+      // 統一修正new Date成UTC格式
       const calculateNewArrivalTime = (
         prevArrivalTime,
         prevStayTime,
         formattedDuration
       ) => {
-        // 解析前一個景點的到達時間
         const prevHours = prevArrivalTime.getUTCHours();
         const prevMinutes = prevArrivalTime.getUTCMinutes();
         const prevSeconds = prevArrivalTime.getUTCSeconds();
-        // 解析停留時間
+
         const stayHours = prevStayTime.getUTCHours();
         const stayMinutes = prevStayTime.getUTCMinutes();
         const staySeconds = prevStayTime.getUTCSeconds();
-        // 解析交通時間
+
         const [durationHours, durationMinutes, durationSeconds] =
           formattedDuration
             ? formattedDuration.split(":").map(Number)
@@ -173,14 +170,12 @@ router.post("/", authenticate, async (req, res) => {
 
         let totalHours = prevHours + stayHours + durationHours + addHours;
 
-        // 創建新的日期物件
         const newDate = new Date(prevArrivalTime);
         newDate.setUTCHours(totalHours, totalMinutes, totalSeconds);
 
         return newDate;
       };
 
-      // 在主程式中使用
       let newArrivalTime = null;
       if (order === 0) {
         newArrivalTime = new Date(`${which_date}T08:00:00Z`);
@@ -193,7 +188,7 @@ router.post("/", authenticate, async (req, res) => {
         );
       }
 
-      // 5. 使用 upsert 新增或更新景點
+      // upsert新增或更新景點
       const upsertedSchedulePlace = await prisma.schedule_places.upsert({
         where: {
           id: id ?? -1, // 使用 -1，確定 id 不存在時應直接進行 create
@@ -232,7 +227,7 @@ router.post("/", authenticate, async (req, res) => {
         },
       });
 
-      // 6. 如果是新增景點，更新後續景點的時間
+      // 如果是新增景點，重新計算/更新後續景點的時間
       if (!id && order < existingPlaces.length) {
         const affectedPlaces = existingPlaces.filter(
           (place) => place.order >= order
