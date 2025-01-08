@@ -65,7 +65,8 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        const email = profile.email || `${profile.id}@line.com`;
+        const shortenedId = profile.id.slice(0, 8);
+        const email = profile.email || `${shortenedId}@line.com`;
         let user = await prisma.users.findUnique({ where: { email } });
         if (user) {
           user = await prisma.users.update({
