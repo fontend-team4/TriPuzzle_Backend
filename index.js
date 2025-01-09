@@ -21,8 +21,7 @@ import { config } from "./config.js";
 
 const app = express();
 dotenv.config();
-const HOST_URL = process.env.HOST_URL || "http://localhost:5173";
-
+const HOST_URL = process.env.HOST_URL;
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "your_secret_key",
@@ -131,6 +130,10 @@ app.use((err, req, res, next) => {
   res.status(404).json({
     message: err instanceof Error ? err.message : String(err),
   });
+});
+
+app.get('*', (req, res) => {
+  res.redirect(301, 'https://www.tripuzzle.fun' + req.originalUrl);
 });
 
 const PORT = process.env.PORT || 3000;
