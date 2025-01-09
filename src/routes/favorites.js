@@ -93,4 +93,93 @@ router.get("/:id", authenticate, async (req, res) => {
   }
 });
 
+// 批量新增或移除收藏
+router.post('/batchUpdate', authenticate, async (req, res) => {
+  const { updates } = req.body; // 接收批量更新的操作陣列
+  const userId = req.user.id; // 使用路由參數
+
+
+  if (!Array.isArray(updates) || updates.length === 0) {
+    return res.status(400).json({ message: '操作陣列無效或為空' });
+  }
+
+  const results = [];
+  const errors = [];
+
+  try {
+    for (const update of updates) {
+      const { place_id, action } = update;
+
+      if (!place_id || !action) {
+        errors.push({ place_id, error: '缺少 place_id 或 action' });
+        continue;
+      }
+
+      if (action === 'add') {
+        try {
+          // 檢查地點是否存在
+          const place = await prisma.places.findUnique({ where: { place_id } });
+          if (!place) {
+            errors.push({ place_id, error: '地點不存在' });
+            continue;
+          }
+
+          // 檢查是否已存在收藏
+          const existingFavorite = await prisma.favorites.findUnique({
+            where: {
+              favorite_user_favorite_places: {
+                favorite_user: userId,
+                favorite_places: place_id,
+              },
+            },
+          });
+
+          if (existingFavorite) {
+            errors.push({ place_id, error: '收藏已存在' });
+            continue;
+          }
+
+          // 新增收藏
+          const favorite = await prisma.favorites.create({
+            data: {
+              favorite_user: userId,
+              favorite_places: place_id,
+            },
+          });
+          results.push({ place_id, action: 'add', status: 'success', favorite });
+        } catch (error) {
+          errors.push({ place_id, action: 'add', error: error.message });
+        }
+      } else if (action === 'remove') {
+        try {
+          // 刪除收藏
+          await prisma.favorites.delete({
+            where: {
+              favorite_user_favorite_places: {
+                favorite_user: userId,
+                favorite_places: place_id,
+              },
+            },
+          });
+          results.push({ place_id, action: 'remove', status: 'success' });
+        } catch (error) {
+          errors.push({ place_id, action: 'remove', error: error.message });
+        }
+      } else {
+        errors.push({ place_id, action, error: '未知的操作' });
+      }
+    }
+
+    res.json({
+      message: '批量操作完成',
+      results,
+      errors,
+    });
+  } catch (error) {
+    console.error('批量更新時發生錯誤:', error);
+    res.status(500).json({ error: '批量更新失敗', details: error.message });
+  }
+});
+
+
 export { router };
