@@ -58,7 +58,6 @@ passport.use(
     }
   )
 );
-
 passport.use(
   new LineStrategy(
     {
@@ -81,17 +80,6 @@ passport.use(
               login_way: "LINE",
             },
           });
-          const tokenPayload = {
-            id: user.id,
-            email: user.email,
-          };
-          const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
-            expiresIn: "24h",
-          });
-          await prisma.users.update({
-            where: { id: user.id },
-            data: { token },
-          });
         } else {
           user = await prisma.users.create({
             data: {
@@ -102,18 +90,23 @@ passport.use(
               login_way: "LINE",
             },
           });
-          const tokenPayload = {
-            id: user.id,
-            email: user.email,
-          };
-          const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
-            expiresIn: "24h",
-          });
-          await prisma.users.update({
-            where: { id: user.id },
-            data: { token },
-          });
         }
+
+        // 生成並更新 JWT token
+        const tokenPayload = {
+          id: user.id,
+          email: user.email,
+        };
+        const token = jwt.sign(tokenPayload, config.jwtSecretKey, {
+          expiresIn: "24h",
+        });
+
+        // 同步存儲 token
+        user = await prisma.users.update({
+          where: { id: user.id },
+          data: { token },
+        });
+
         return done(null, user);
       } catch (err) {
         return done(err, null);
@@ -138,3 +131,5 @@ passport.deserializeUser(async (id, done) => {
     done(err, null);
   }
 });
+
+
