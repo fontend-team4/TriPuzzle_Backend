@@ -24,45 +24,22 @@ router.get("/", authenticate, async (req, res) => {
   }
 });
 
-// router.get("/", authenticate, async (req, res) => {
-//   const { schedule_id } = req.query;
-//   try {
-//     const schedule = await prisma.schedules.findUnique({
-//       where: { schedule_id: parseInt(schedule_id) },
-//       include: {
-//         schedule_places: {
-//           include: {
-//             places: true,
-//           },
-//         },
-//       },
-//     });
-
-//     const { start_date, end_date, schedule_places } = schedule;
-//     const dateRange = [];
-//     let currentDate = new Date(start_date);
-
-//     while (currentDate <= new Date(end_date)) {
-//       dateRange.push(currentDate.toISOString().split("T")[0]);
-//       currentDate.setDate(currentDate.getDate() + 1);
-//     }
-
-//     const result = dateRange.map((date) => {
-//       const placesForDate = schedule_places
-//         .filter((sp) => sp.which_date.toISOString().split("T")[0] === date)
-//         .map((sp) => sp.places);
-
-//       return {
-//         date,
-//         places: placesForDate.length > 0 ? placesForDate : [{}],
-//       };
-//     });
-
-//     res.status(200).json(result);
-//   } catch (err) {
-//     res.status(500).json({ error: "無法取得資料" });
-//   }
-// });
+router.get("/dates", authenticate, async (req, res) => {
+  const { schedule_id } = req.query;
+  try {
+    const schedule = await prisma.schedules.findUnique({
+      where: { id: parseInt(schedule_id, 10) },
+      select: {
+        start_date: true,
+        end_date: true,
+      },
+    });
+    res.json(schedule);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "無法取得資料" });
+  }
+});
 
 router.delete("/:id", async (req, res) => {
   try {
