@@ -4,7 +4,6 @@ import { authenticator as authenticate } from "../middlewares/authenticator.js";
 import { verifyOwner } from "../middlewares/verifyOwner.js";
 import { getDirections, getDistanceMatrix } from "../services/googleMaps.js";
 
-
 const router = express.Router();
 
 router.get("/", authenticate, async (req, res) => {
@@ -25,6 +24,23 @@ router.get("/", authenticate, async (req, res) => {
   }
 });
 
+router.get("/dates", authenticate, async (req, res) => {
+  const { schedule_id } = req.query;
+  try {
+    const schedule = await prisma.schedules.findUnique({
+      where: { id: parseInt(schedule_id, 10) },
+      select: {
+        start_date: true,
+        end_date: true,
+      },
+    });
+    res.json(schedule);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "無法取得資料" });
+  }
+});
+
 router.delete("/:id", async (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
@@ -36,6 +52,22 @@ router.delete("/:id", async (req, res) => {
       where: { id },
     });
     res.status(200).json({ message: "刪除成功", deleted });
+  } catch (err) {
+    res.status(500).json({ error: "刪除失敗", details: err.message });
+  }
+});
+
+router.delete("/:schedule_id/:which_date", async (req, res) => {
+  try {
+    const schedule_id = parseInt(req.params.schedule_id, 10);
+    const { which_date } = req.params;
+    const deleted = await prisma.schedule_places.deleteMany({
+      where: {
+        schedule_id: schedule_id,
+        which_date: which_date,
+      },
+    });
+    res.statschedule_id(200).json({ message: "刪除成功", deleted });
   } catch (err) {
     res.status(500).json({ error: "刪除失敗", details: err.message });
   }
@@ -81,7 +113,6 @@ router.post("/", authenticate, async (req, res) => {
     order,
   } = req.body;
 
-
   try {
     await prisma.$transaction(async (prisma) => {
       const existingPlaces = await prisma.schedule_places.findMany({
@@ -97,7 +128,6 @@ router.post("/", authenticate, async (req, res) => {
           order: "asc",
         },
       });
-
 
       // 更新受影響景點的順序(order)
       if (!id) {
@@ -233,7 +263,6 @@ router.post("/", authenticate, async (req, res) => {
         },
       });
 
-
       // 如果新增/拖曳景點，重新計算/更新後續景點的時間
       if (order < existingPlaces.length) {
         // const needsTimeUpdate = id
@@ -287,7 +316,6 @@ router.post("/", authenticate, async (req, res) => {
         // }
       }
 
-
       return upsertedSchedulePlace;
     });
 
@@ -300,6 +328,5 @@ router.post("/", authenticate, async (req, res) => {
     });
   }
 });
-
 
 export { router };
