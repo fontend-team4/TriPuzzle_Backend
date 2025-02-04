@@ -9,6 +9,15 @@ const prisma = new PrismaClient();
 router.get('/:scheduleId/bills', authenticate, async (req, res) => {
   const { scheduleId } = req.params;
   try {
+    // 先查找 scheduleId 是否存在
+    const scheduleExists = await prisma.schedules.findUnique({
+      where: { id: parseInt(scheduleId) },
+    });
+
+    if (!scheduleExists) {
+      return res.status(404).json({ error: '未找到該行程' });
+    }
+
     const bills = await prisma.bills.findMany({
       where: { schedule_id: parseInt(scheduleId) },
       include: {

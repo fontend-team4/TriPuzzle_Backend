@@ -80,6 +80,12 @@ router.get("/:id", authenticate, async (req, res) => {
   }
 
   try {
+    // 檢查使用者是否存在
+    const user = await prisma.users.findUnique({ where: { id: Number(userId) } });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
     const favorites = await prisma.favorites.findMany({
       where: { favorite_user: Number(userId) },
       include: {
