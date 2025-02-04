@@ -121,7 +121,7 @@ app.use((err, req, res, next) => {
       err.message === "jwt expired"
         ? "Token 已過期，請重新登入"
         : `Authentication failed: ${err.message}`;
-    return res.status(401).json({
+    return res.status(404).json({
       message,
     });
   }
@@ -135,6 +135,11 @@ app.use((err, req, res, next) => {
 app.get('*', (req, res) => {
   res.redirect(301, 'https://www.tripuzzle.fun' + req.originalUrl);
 });
+
+app.use((req, res) => {
+  res.status(404).json({ message: "API 路徑不存在" });
+});
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
