@@ -136,13 +136,10 @@ app.get('*', (req, res) => {
   res.redirect(301, 'https://www.tripuzzle.fun' + req.originalUrl);
 });
 
-app.use((req, res) => {
-  res.status(404).json({ message: "API 路徑不存在" });
-});
 
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-export default app; // 確保正確匯出
+export default app; // 用於單元測試
