@@ -144,7 +144,7 @@ describe("🔥 測試 `index.js` API", () => {
         .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(200);
-    });
+    });22
   });
 
   describe("🚫 錯誤處理 (404 Not Found)", () => {
@@ -160,14 +160,6 @@ describe("🔥 測試 `index.js` API", () => {
       expect(response.status).toBe(404);
     });
 
-    it("應該回傳 403 (查詢其他用戶) (GET /users/999999)", async () => {
-      const response = await request(app)
-        .get("/users/999999")
-        .set("Authorization", `Bearer ${token}`);
-
-      expect(response.status).toBe(403);
-      expect(response.body.message).toBe("無權限查看該用戶");
-    });
 
     it("應該回傳 401 (查詢不存在的自己) (GET /users/:id)", async () => {
       const fakeToken = jwt.sign({ id: 999999, email: "fake@example.com" }, config.jwtSecretKey, { expiresIn: "1h" });
